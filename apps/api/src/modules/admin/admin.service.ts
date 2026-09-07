@@ -31,7 +31,8 @@ export class AdminService {
   }
 
   async getAdminStats(): Promise<AdminStatsDto> {
-    const totalUsers = await this.prisma.user.count();
+    const totalUsers = await this.prisma.user.count({ where: { role: 'USER' } });
+    const totalOrganizations = await this.prisma.organization.count();
     const totalChallenges = await this.prisma.challenge.count();
     const coreChallenges = await this.prisma.challenge.count({
       where: { type: 'CORE' },
@@ -58,11 +59,76 @@ export class AdminService {
 
     return {
       totalUsers,
+      totalOrganizations,
       totalChallenges,
       coreChallenges,
       bonusChallenges,
       pendingChallenges,
       totalCompletions,
+    };
+  }
+
+  async getUsers(options: { role?: string; search?: string }): Promise<any> {
+    const where: any = {};
+    if (options.role && options.role !== 'ALL') {
+      where.role = options.role;
+    }
+    if (options.search && options.search.trim().length > 0) {
+      const q = options.search.trim();
+      where.OR = [
+        { name: { contains: q } },
+        { email: { contains: q } },
+      ];
+    }
+
+    const users = await this.prisma.user.findMany({
+      where,
+      include: {
+        organization: true,
+        ownedOrg: true,
+        progress: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const mappedUsers = users.map((u) => {
+      let daysCount = 0;
+      try {
+        const days = JSON.parse(u.progress?.completedDays || '[]');
+        if (Array.isArray(days)) daysCount = days.length;
+      } catch {
+        // ignore
+      }
+
+      return {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        isEmailVerified: u.isEmailVerified,
+        organizationName: u.organization?.name || u.ownedOrg?.name || null,
+        completedDaysCount: daysCount,
+        streak: u.progress?.streak || 0,
+        createdAt: u.createdAt.toISOString(),
+      };
+    });
+
+    return {
+      users: mappedUsers,
+      total: mappedUsers.length,
+    };
+  }
+
+  async deleteUser(id: string): Promise<{ success: boolean; message: string }> {
+    const existing = await this.prisma.user.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    await this.prisma.user.delete({ where: { id } });
+    return {
+      success: true,
+      message: `Account ${existing.email} (${existing.name}) has been deleted successfully`,
     };
   }
 

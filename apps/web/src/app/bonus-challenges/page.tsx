@@ -8,7 +8,8 @@ import { challengeService } from '@/services/challenge.service';
 import { Challenge } from '@shared/types';
 
 export default function BonusChallengesPage() {
-  const { user, progress, toggleDay } = useAuth();
+  const { user } = useAuth();
+
 
   const [bonusChallenges, setBonusChallenges] = useState<Challenge[]>([]);
   const [mySubmissions, setMySubmissions] = useState<Challenge[]>([]);

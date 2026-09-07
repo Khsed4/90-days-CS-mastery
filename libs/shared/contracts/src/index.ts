@@ -6,6 +6,11 @@ import {
   User,
   Challenge,
   UserProgress,
+  Organization,
+  OrganizationInvite,
+  OrganizationMember,
+  OrganizationStats,
+  AdminUserDetails,
 } from '@shared/types';
 
 // ==========================================
@@ -16,6 +21,14 @@ export interface RegisterRequest {
   email: string;
   password: string;
   name: string;
+  inviteToken?: string;
+}
+
+export interface RegisterOrganizationRequest {
+  organizationName: string;
+  name: string;
+  email: string;
+  password: string;
 }
 
 export interface LoginRequest {
@@ -41,6 +54,35 @@ export interface AuthResponse {
 export interface SendCodeResponse {
   success: boolean;
   message: string;
+}
+
+// ==========================================
+// Organization Contracts
+// ==========================================
+
+export interface CreateOrgInviteRequest {
+  email?: string;
+  maxUses?: number;
+  expiresInDays?: number;
+}
+
+export interface JoinOrgRequest {
+  token: string;
+}
+
+export interface OrgOverviewResponse {
+  organization: Organization;
+  stats: OrganizationStats;
+}
+
+export interface OrgMembersResponse {
+  members: OrganizationMember[];
+  total: number;
+}
+
+export interface OrgMemberProgressResponse {
+  member: OrganizationMember;
+  progress: UserProgress;
 }
 
 // ==========================================
@@ -94,14 +136,20 @@ export interface ReviewChallengeRequest {
 }
 
 // ==========================================
-// Admin Statistics Contracts
+// Admin Governance Contracts
 // ==========================================
 
 export interface AdminStatsResponse {
   totalUsers: number;
+  totalOrganizations: number;
   totalChallenges: number;
   coreChallenges: number;
   bonusChallenges: number;
   pendingChallenges: number;
   totalCompletions: number;
+}
+
+export interface AdminUserListResponse {
+  users: AdminUserDetails[];
+  total: number;
 }

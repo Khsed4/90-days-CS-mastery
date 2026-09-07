@@ -50,4 +50,14 @@ export const adminService = {
     const res = await api.delete<{ success: boolean }>(`/admin/challenges/${id}`);
     return res.data;
   },
+
+  async getUsers(params: { role?: string; search?: string } = {}): Promise<{ users: any[]; total: number }> {
+    const res = await api.get<{ users: any[]; total: number }>('/admin/users', { params });
+    return res.data;
+  },
+
+  async deleteUser(id: string): Promise<{ success: boolean; message: string }> {
+    const res = await api.delete<{ success: boolean; message: string }>(`/admin/users/${id}`);
+    return res.data;
+  },
 };

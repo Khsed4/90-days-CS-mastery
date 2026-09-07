@@ -1,6 +1,7 @@
 import api from './api';
 import {
   RegisterRequest,
+  RegisterOrganizationRequest,
   LoginRequest,
   SendVerificationCodeRequest,
   VerifyCodeRequest,
@@ -12,6 +13,11 @@ import { User } from '@shared/types';
 export const authService = {
   async register(dto: RegisterRequest): Promise<AuthResponse> {
     const res = await api.post<AuthResponse>('/auth/register', dto);
+    return res.data;
+  },
+
+  async registerOrganization(dto: RegisterOrganizationRequest): Promise<AuthResponse> {
+    const res = await api.post<AuthResponse>('/auth/register-organization', dto);
     return res.data;
   },
 

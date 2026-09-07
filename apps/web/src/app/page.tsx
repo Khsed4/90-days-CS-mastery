@@ -12,12 +12,14 @@ function ChallengeItem({
   challenge,
   isCompleted,
   isLocked,
+  isObserver,
   onToggle,
   onLockedClick,
 }: {
   challenge: Challenge;
   isCompleted: boolean;
   isLocked: boolean;
+  isObserver: boolean;
   onToggle: () => void;
   onLockedClick: () => void;
 }) {
@@ -54,22 +56,28 @@ function ChallengeItem({
       }`}
     >
       <div className="flex items-center gap-3 min-w-0 pr-2">
-        <input
-          type="checkbox"
-          checked={isCompleted}
-          onChange={(e) => {
-            e.stopPropagation();
-            onToggle();
-          }}
-          onClick={(e) => e.stopPropagation()}
-          className="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-blue-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
-        />
+        {isObserver ? (
+          <div className="w-5 h-5 rounded-md bg-zinc-800/90 border border-zinc-700/80 flex items-center justify-center text-[10px] font-mono font-bold text-zinc-400 shrink-0">
+            {challenge.id}
+          </div>
+        ) : (
+          <input
+            type="checkbox"
+            checked={isCompleted}
+            onChange={(e) => {
+              e.stopPropagation();
+              onToggle();
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-blue-600 focus:ring-0 focus:ring-offset-0 cursor-pointer shrink-0"
+          />
+        )}
         <div className="min-w-0 flex flex-col">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider">
               Day {challenge.id}
             </span>
-            {challenge.id <= 3 && (
+            {challenge.id <= 3 && !isObserver && (
               <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
                 Free Trial
               </span>
@@ -102,6 +110,7 @@ function ChallengeItem({
 
 export default function DashboardPage() {
   const {
+    user,
     isGuest,
     loading,
     progress,
@@ -111,12 +120,14 @@ export default function DashboardPage() {
     closeAuthBarrier,
   } = useAuth();
 
+  const isObserver = user?.role === 'ADMIN' || user?.role === 'ORGANIZATION';
+
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [fetching, setFetching] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('ALL');
 
-  const t = translations[progress.interfaceLang || 'en'] || translations.en;
+  const t = translations.en;
 
   useEffect(() => {
     fetchChallenges();
@@ -191,6 +202,56 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Admin Inspection Banner */}
+      {user?.role === 'ADMIN' && (
+        <div className="max-w-7xl w-full mx-auto px-4 sm:px-8 pt-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-lg bg-rose-950/30 border border-rose-800/60 text-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-md bg-rose-600/20 text-rose-400 border border-rose-500/30 flex items-center justify-center shrink-0">
+                <i className="fa-solid fa-shield-halved text-sm"></i>
+              </div>
+              <div>
+                <p className="font-semibold text-white">Admin Curriculum Inspection</p>
+                <p className="text-xs text-zinc-400">
+                  Viewing the 90-day mastery curriculum in moderator inspection mode. You can inspect all problem statements and reference solutions without altering learner progress.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/admin"
+              className="px-3.5 py-1.5 rounded-md text-xs font-semibold text-rose-200 bg-rose-900/60 hover:bg-rose-900 border border-rose-700 transition-colors whitespace-nowrap"
+            >
+              Admin Console →
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Organization Preview Banner */}
+      {user?.role === 'ORGANIZATION' && (
+        <div className="max-w-7xl w-full mx-auto px-4 sm:px-8 pt-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-lg bg-purple-950/30 border border-purple-800/60 text-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-md bg-purple-600/20 text-purple-400 border border-purple-500/30 flex items-center justify-center shrink-0">
+                <i className="fa-solid fa-building text-sm"></i>
+              </div>
+              <div>
+                <p className="font-semibold text-white">Organization Curriculum Preview</p>
+                <p className="text-xs text-zinc-400">
+                  Explore all 90 days of challenges assigned to your team members in observer preview mode.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/organization"
+              className="px-3.5 py-1.5 rounded-md text-xs font-semibold text-purple-200 bg-purple-900/60 hover:bg-purple-900 border border-purple-700 transition-colors whitespace-nowrap"
+            >
+              Team Dashboard →
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Main Container */}
       <main className="max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 space-y-8 flex-1">
         {/* Search and Filters Bar */}
@@ -248,8 +309,9 @@ export default function DashboardPage() {
                 <ChallengeItem
                   key={c.id}
                   challenge={c}
-                  isCompleted={progress.completedDays.includes(c.id)}
-                  isLocked={isGuest && c.id > 3}
+                  isCompleted={!isObserver && progress.completedDays.includes(c.id)}
+                  isLocked={!isObserver && isGuest && c.id > 3}
+                  isObserver={isObserver}
                   onToggle={() => toggleDay(c.id)}
                   onLockedClick={() => openAuthBarrier(c.id)}
                 />
@@ -277,8 +339,9 @@ export default function DashboardPage() {
                 <ChallengeItem
                   key={c.id}
                   challenge={c}
-                  isCompleted={progress.completedDays.includes(c.id)}
-                  isLocked={isGuest}
+                  isCompleted={!isObserver && progress.completedDays.includes(c.id)}
+                  isLocked={!isObserver && isGuest}
+                  isObserver={isObserver}
                   onToggle={() => toggleDay(c.id)}
                   onLockedClick={() => openAuthBarrier(c.id)}
                 />
@@ -306,8 +369,9 @@ export default function DashboardPage() {
                 <ChallengeItem
                   key={c.id}
                   challenge={c}
-                  isCompleted={progress.completedDays.includes(c.id)}
-                  isLocked={isGuest}
+                  isCompleted={!isObserver && progress.completedDays.includes(c.id)}
+                  isLocked={!isObserver && isGuest}
+                  isObserver={isObserver}
                   onToggle={() => toggleDay(c.id)}
                   onLockedClick={() => openAuthBarrier(c.id)}
                 />

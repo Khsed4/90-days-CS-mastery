@@ -8,7 +8,7 @@ export class SyncProgressDto implements SyncProgressRequest {
   @IsArray()
   completedDays: number[];
 
-  @ApiPropertyOptional({ example: 'en', description: 'Interface language (en, fa, ps)' })
+  @ApiPropertyOptional({ example: 'en', description: 'Interface language (en)' })
   @IsOptional()
   @IsString()
   interfaceLang?: InterfaceLanguage;

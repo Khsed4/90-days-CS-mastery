@@ -1,19 +1,20 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { InterfaceLanguage } from '@shared/types';
 
 const GUEST_DAYS_KEY = 'guest_completed_days';
 const GUEST_LANG_KEY = 'guest_interface_lang';
 
 export function useGuestProgress() {
   const [guestDays, setGuestDays] = useState<number[]>([]);
-  const [guestLang, setGuestLang] = useState<'en' | 'fa' | 'ps'>('en');
+  const [guestLang, setGuestLang] = useState<InterfaceLanguage>('en');
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     try {
       const savedDays = localStorage.getItem(GUEST_DAYS_KEY);
-      const savedLang = localStorage.getItem(GUEST_LANG_KEY) as 'en' | 'fa' | 'ps';
+      const savedLang = localStorage.getItem(GUEST_LANG_KEY) as InterfaceLanguage;
 
       if (savedDays) {
         const parsed = JSON.parse(savedDays);
@@ -60,7 +61,7 @@ export function useGuestProgress() {
     [guestDays, saveDays],
   );
 
-  const setLanguage = useCallback((lang: 'en' | 'fa' | 'ps') => {
+  const setLanguage = useCallback((lang: InterfaceLanguage) => {
     setGuestLang(lang);
     try {
       localStorage.setItem(GUEST_LANG_KEY, lang);

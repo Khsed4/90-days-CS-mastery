@@ -11,7 +11,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, SendVerificationCodeDto, VerifyCodeDto } from './dto';
+import { RegisterDto, RegisterOrganizationDto, LoginDto, SendVerificationCodeDto, VerifyCodeDto } from './dto';
 import { AuthResponse, SendCodeResponse } from '@shared/contracts';
 import { User } from '@shared/types';
 
@@ -20,12 +20,20 @@ import { User } from '@shared/types';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @ApiOperation({ summary: 'Register a new user account' })
+  @ApiOperation({ summary: 'Register a new personal learner account' })
   @ApiResponse({ status: 201, description: 'User registered successfully' })
   @ApiResponse({ status: 409, description: 'Email already registered' })
   @Post('register')
   async register(@Body() dto: RegisterDto): Promise<AuthResponse> {
     return this.authService.register(dto);
+  }
+
+  @ApiOperation({ summary: 'Register a new organization account' })
+  @ApiResponse({ status: 201, description: 'Organization registered successfully' })
+  @ApiResponse({ status: 409, description: 'Email already registered' })
+  @Post('register-organization')
+  async registerOrganization(@Body() dto: RegisterOrganizationDto): Promise<AuthResponse> {
+    return this.authService.registerOrganization(dto);
   }
 
   @ApiOperation({ summary: 'Log in with email and password' })

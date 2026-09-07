@@ -12,6 +12,7 @@ import confetti from 'canvas-confetti';
 
 export default function WorkspacePage({ params }: { params: { id: string } }) {
   const {
+    user,
     isGuest,
     loading,
     progress,
@@ -30,7 +31,7 @@ export default function WorkspacePage({ params }: { params: { id: string } }) {
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const t = translations[progress.interfaceLang || 'en'] || translations.en;
+  const t = translations.en;
 
   useEffect(() => {
     if (!loading && isGuest && id > 3) {
@@ -198,17 +199,29 @@ export default function WorkspacePage({ params }: { params: { id: string } }) {
               </button>
             </div>
 
-            <button
-              onClick={handleToggle}
-              className={`px-4 py-2 rounded-md text-xs font-semibold transition-colors flex items-center gap-1.5 ${
-                isCompleted
-                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-800 hover:bg-emerald-900/60'
-                  : 'bg-blue-600 hover:bg-blue-500 text-white'
-              }`}
-            >
-              <i className={`fa-solid ${isCompleted ? 'fa-circle-check' : 'fa-check'} text-xs`}></i>
-              <span>{isCompleted ? t.completed : t.markComplete}</span>
-            </button>
+            {user?.role === 'ADMIN' ? (
+              <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-md text-xs font-semibold bg-rose-950/60 border border-rose-800/80 text-rose-300">
+                <i className="fa-solid fa-shield-halved text-rose-400"></i>
+                <span>Admin Inspection Mode</span>
+              </div>
+            ) : user?.role === 'ORGANIZATION' ? (
+              <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-md text-xs font-semibold bg-purple-950/60 border border-purple-800/80 text-purple-300">
+                <i className="fa-solid fa-building text-purple-400"></i>
+                <span>Organization Preview</span>
+              </div>
+            ) : (
+              <button
+                onClick={handleToggle}
+                className={`px-4 py-2 rounded-md text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                  isCompleted
+                    ? 'bg-emerald-950 text-emerald-300 border border-emerald-800 hover:bg-emerald-900/60'
+                    : 'bg-blue-600 hover:bg-blue-500 text-white'
+                }`}
+              >
+                <i className={`fa-solid ${isCompleted ? 'fa-circle-check' : 'fa-check'} text-xs`}></i>
+                <span>{isCompleted ? t.completed : t.markComplete}</span>
+              </button>
+            )}
           </div>
         </div>
 

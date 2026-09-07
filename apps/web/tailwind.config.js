@@ -7,6 +7,7 @@ module.exports = {
     path.join(__dirname, 'src/**/*.{js,ts,jsx,tsx,mdx}'),
     path.join(__dirname, 'src/app/**/*.{js,ts,jsx,tsx,mdx}'),
     path.join(__dirname, 'src/components/**/*.{js,ts,jsx,tsx,mdx}'),
+    path.join(__dirname, 'src/features/**/*.{js,ts,jsx,tsx,mdx}'),
     './src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {

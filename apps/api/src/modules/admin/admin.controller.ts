@@ -88,4 +88,23 @@ export class AdminController {
   ): Promise<{ success: boolean }> {
     return this.adminService.deleteChallenge(id);
   }
+
+  @ApiOperation({ summary: 'Get all platform users with role/search filtering' })
+  @ApiQuery({ name: 'role', required: false, description: 'Filter by role: USER, ORGANIZATION, ADMIN' })
+  @ApiQuery({ name: 'search', required: false, description: 'Search by name or email' })
+  @ApiResponse({ status: 200, description: 'List of users returned' })
+  @Get('users')
+  async getUsers(
+    @Query('role') role?: string,
+    @Query('search') search?: string,
+  ): Promise<any> {
+    return this.adminService.getUsers({ role, search });
+  }
+
+  @ApiOperation({ summary: 'Delete any user or organization account' })
+  @ApiResponse({ status: 200, description: 'User deleted successfully' })
+  @Delete('users/:id')
+  async deleteUser(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
+    return this.adminService.deleteUser(id);
+  }
 }

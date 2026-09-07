@@ -5,6 +5,9 @@ export class AdminStatsDto implements AdminStatsResponse {
   @ApiProperty({ example: 120 })
   totalUsers: number;
 
+  @ApiProperty({ example: 12 })
+  totalOrganizations: number;
+
   @ApiProperty({ example: 95 })
   totalChallenges: number;
 

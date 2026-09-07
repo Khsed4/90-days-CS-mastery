@@ -16,4 +16,9 @@ export class RegisterDto implements RegisterRequest {
   @IsString()
   @MinLength(2, { message: 'Name must be at least 2 characters long' })
   name: string;
+
+  @ApiProperty({ example: 'org-invite-token-123', description: 'Optional organization invitation token', required: false })
+  @IsString()
+  @MinLength(3)
+  inviteToken?: string;
 }

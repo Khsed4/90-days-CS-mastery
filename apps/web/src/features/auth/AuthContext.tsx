@@ -22,11 +22,13 @@ interface AuthContextType {
   openAuthBarrier: (dayId?: number) => void;
   closeAuthBarrier: () => void;
   login: (email: string, password: string) => Promise<AuthResponse>;
-  register: (email: string, password: string, name: string) => Promise<AuthResponse>;
+  register: (email: string, password: string, name: string, inviteToken?: string) => Promise<AuthResponse>;
+  registerOrganization: (organizationName: string, name: string, email: string, password: string) => Promise<AuthResponse>;
   logout: () => void;
   toggleDay: (dayId: number) => Promise<boolean>;
   setInterfaceLang: (lang: InterfaceLanguage) => Promise<void>;
   handleAuthSuccess: (authData: AuthResponse) => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -70,23 +72,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         interfaceLang: guestLang,
       };
 
-  // Dynamic RTL / LTR based on language
+  // Enforce LTR for English
   useEffect(() => {
-    const lang = activeProgress.interfaceLang || 'en';
-    const rtl = lang === 'fa' || lang === 'ps';
     if (typeof document !== 'undefined' && document.body) {
-      document.body.dir = rtl ? 'rtl' : 'ltr';
+      document.body.dir = 'ltr';
     }
-  }, [activeProgress.interfaceLang]);
+  }, []);
 
   const fetchUserData = async (activeToken?: string) => {
     try {
-      const [profile, prog] = await Promise.all([
-        authService.getProfile(),
-        progressService.getProgress(),
-      ]);
+      const profile = await authService.getProfile();
       setUser(profile);
-      setDbProgress(prog);
+
+      if (profile.role === 'USER') {
+        const prog = await progressService.getProgress();
+        setDbProgress(prog);
+      } else {
+        setDbProgress({
+          userId: profile.id,
+          completedDays: [],
+          streak: 0,
+          interfaceLang: 'en',
+        });
+      }
     } catch (err) {
       console.error('Failed to load user data:', err);
       logout();
@@ -100,21 +108,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setToken(authData.accessToken);
     setUser(authData.user);
 
-    // Sync any guest progress to the user's account
-    try {
-      if (guestDays.length > 0) {
-        const synced = await progressService.syncProgress({
-          completedDays: guestDays,
-          interfaceLang: guestLang,
-        });
-        setDbProgress(synced);
-        clearGuestProgress();
-      } else {
-        const prog = await progressService.getProgress();
-        setDbProgress(prog);
+    if (authData.user.role === 'USER') {
+      // Sync any guest progress to the user's account
+      try {
+        if (guestDays.length > 0) {
+          const synced = await progressService.syncProgress({
+            completedDays: guestDays,
+            interfaceLang: guestLang,
+          });
+          setDbProgress(synced);
+          clearGuestProgress();
+        } else {
+          const prog = await progressService.getProgress();
+          setDbProgress(prog);
+        }
+      } catch (err) {
+        console.error('Error syncing guest progress:', err);
       }
-    } catch (err) {
-      console.error('Error syncing guest progress:', err);
+    } else {
+      setDbProgress({
+        userId: authData.user.id,
+        completedDays: [],
+        streak: 0,
+        interfaceLang: 'en',
+      });
     }
   };
 
@@ -126,8 +143,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return res;
   };
 
-  const register = async (email: string, password: string, name: string): Promise<AuthResponse> => {
-    const res = await authService.register({ email, password, name });
+  const register = async (email: string, password: string, name: string, inviteToken?: string): Promise<AuthResponse> => {
+    const res = await authService.register({ email, password, name, inviteToken });
+    if (!res.requiresEmailVerification) {
+      await handleAuthSuccess(res);
+    }
+    return res;
+  };
+
+  const registerOrganization = async (
+    organizationName: string,
+    name: string,
+    email: string,
+    password: string,
+  ): Promise<AuthResponse> => {
+    const res = await authService.registerOrganization({ organizationName, name, email, password });
     if (!res.requiresEmailVerification) {
       await handleAuthSuccess(res);
     }
@@ -139,6 +169,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setToken(null);
     setUser(null);
     setDbProgress(null);
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
   };
 
   const openAuthBarrier = useCallback((dayId?: number) => {
@@ -150,8 +183,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const toggleDay = async (dayId: number): Promise<boolean> => {
-    // If user is authenticated, update in DB
-    if (token && user) {
+    // Admins and Organizations are observers/moderators and cannot mark progress
+    if (user && (user.role === 'ADMIN' || user.role === 'ORGANIZATION')) {
+      return false;
+    }
+
+    // If learner is authenticated, update in DB
+    if (token && user && user.role === 'USER') {
       try {
         const updated = await progressService.toggleDay(dayId);
         setDbProgress(updated);
@@ -186,6 +224,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const refreshUser = async () => {
+    const savedToken = localStorage.getItem('token');
+    if (savedToken) {
+      await fetchUserData(savedToken);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -199,10 +244,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         closeAuthBarrier,
         login,
         register,
+        registerOrganization,
         logout,
         toggleDay,
         setInterfaceLang,
         handleAuthSuccess,
+        refreshUser,
       }}
     >
       {children}

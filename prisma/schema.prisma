@@ -9,22 +9,61 @@ generator client {
 
 enum Role {
   USER
+  ORGANIZATION
   ADMIN
 }
 
 model User {
-  id              String      @id @default(uuid())
-  email           String      @unique
+  id              String         @id @default(uuid())
+  email           String         @unique
   password        String
   name            String
-  role            Role        @default(USER)
-  isEmailVerified Boolean     @default(false)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  role            Role           @default(USER)
+  isEmailVerified Boolean        @default(false)
+  
+  // Organization Relations
+  organizationId  String?
+  organization    Organization?  @relation("OrgMembers", fields: [organizationId], references: [id], onDelete: SetNull)
+  ownedOrg        Organization?  @relation("OrgOwner")
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   progress        Progress?
   challenges      Challenge[]
 
+  @@index([organizationId])
   @@map("users")
+}
+
+model Organization {
+  id          String               @id @default(uuid())
+  name        String               @db.VarChar(255)
+  slug        String               @unique @db.VarChar(100)
+  ownerId     String               @unique
+  owner       User                 @relation("OrgOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members     User[]               @relation("OrgMembers")
+  invites     OrganizationInvite[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@map("organizations")
+}
+
+model OrganizationInvite {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  token          String       @unique @db.VarChar(64)
+  email          String?      @db.VarChar(255)
+  maxUses        Int          @default(0)
+  usedCount      Int          @default(0)
+  expiresAt      DateTime?
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+
+  @@index([token])
+  @@index([organizationId])
+  @@map("organization_invites")
 }
 
 model EmailVerification {

@@ -1,5 +1,6 @@
 export const USER_ROLES = {
   USER: 'USER',
+  ORGANIZATION: 'ORGANIZATION',
   ADMIN: 'ADMIN',
 } as const;
 
@@ -22,8 +23,6 @@ export const CHALLENGE_STATUSES = {
 
 export const INTERFACE_LANGUAGES = {
   EN: 'en',
-  FA: 'fa',
-  PS: 'ps',
 } as const;
 
 export const DEFAULT_TRIAL_DAYS = [1, 2, 3];

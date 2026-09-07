@@ -5,7 +5,7 @@ import { useAuth } from '@/features/auth';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { adminService } from '@/services/admin.service';
-import { ChallengeReviewModal, ChallengeEditModal } from '@/features/admin';
+import { ChallengeReviewModal, ChallengeEditModal, UserManagementTable } from '@/features/admin';
 import { Challenge } from '@shared/types';
 import { AdminStatsResponse } from '@shared/contracts';
 
@@ -18,7 +18,7 @@ export default function AdminPage() {
   const [fetching, setFetching] = useState(true);
 
   // Filters
-  const [activeTab, setActiveTab] = useState<'ALL' | 'PENDING' | 'CORE' | 'BONUS'>('PENDING');
+  const [activeTab, setActiveTab] = useState<'PENDING' | 'CORE' | 'BONUS' | 'ALL' | 'USERS'>('PENDING');
   const [search, setSearch] = useState('');
 
   // Modals
@@ -145,10 +145,10 @@ export default function AdminPage() {
               <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-950 text-rose-400 border border-rose-800">
                 ADMIN CONSOLE
               </span>
-              <h1 className="text-xl font-bold text-white tracking-tight">Curriculum & Moderation</h1>
+              <h1 className="text-xl font-bold text-white tracking-tight">System & Curriculum Control</h1>
             </div>
             <p className="text-xs text-zinc-400 mt-1">
-              Manage core challenges, review community submissions, and monitor platform metrics.
+              Manage challenges, review community submissions, monitor platform metrics, and oversee users and organizations.
             </p>
           </div>
 
@@ -165,30 +165,34 @@ export default function AdminPage() {
 
         {/* Stats Grid */}
         {stats && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
             <div className="p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg">
-              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Users</span>
+              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Learners</span>
               <p className="text-xl font-bold text-white mt-1">{stats.totalUsers}</p>
+            </div>
+            <div className="p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg">
+              <span className="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Organizations</span>
+              <p className="text-xl font-bold text-purple-300 mt-1">{stats.totalOrganizations ?? 0}</p>
             </div>
             <div className="p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg">
               <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Challenges</span>
               <p className="text-xl font-bold text-white mt-1">{stats.totalChallenges}</p>
             </div>
             <div className="p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg">
-              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Core Curriculum</span>
+              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Core 90-Day</span>
               <p className="text-xl font-bold text-blue-400 mt-1">{stats.coreChallenges}</p>
             </div>
             <div className="p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg">
-              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Bonus Approved</span>
+              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Bonus</span>
               <p className="text-xl font-bold text-emerald-400 mt-1">{stats.bonusChallenges}</p>
             </div>
             <div className="p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg">
-              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Pending Review</span>
+              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Pending</span>
               <p className="text-xl font-bold text-amber-400 mt-1">{stats.pendingChallenges}</p>
             </div>
             <div className="p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg">
               <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Completions</span>
-              <p className="text-xl font-bold text-purple-400 mt-1">{stats.totalCompletions}</p>
+              <p className="text-xl font-bold text-indigo-400 mt-1">{stats.totalCompletions}</p>
             </div>
           </div>
         )}
@@ -196,7 +200,7 @@ export default function AdminPage() {
         {/* Filters & Tabs */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
           {/* Tabs */}
-          <div className="flex items-center gap-1 bg-zinc-900 p-1 rounded-md border border-zinc-800">
+          <div className="flex flex-wrap items-center gap-1 bg-zinc-900 p-1 rounded-md border border-zinc-800">
             <button
               onClick={() => setActiveTab('PENDING')}
               className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5 ${
@@ -243,118 +247,135 @@ export default function AdminPage() {
                   : 'text-zinc-400 hover:text-zinc-200'
               }`}
             >
-              All
+              All Challenges
+            </button>
+
+            <button
+              onClick={() => setActiveTab('USERS')}
+              className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                activeTab === 'USERS'
+                  ? 'bg-purple-900/60 text-purple-200 border border-purple-700 shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              <span>👥 Users & Orgs</span>
             </button>
           </div>
 
-          {/* Search */}
-          <div className="relative w-full sm:w-64">
-            <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500"></i>
-            <input
-              type="text"
-              placeholder="Search table..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-md text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
-            />
-          </div>
+          {/* Search (only for challenge tables) */}
+          {activeTab !== 'USERS' && (
+            <div className="relative w-full sm:w-64">
+              <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500"></i>
+              <input
+                type="text"
+                placeholder="Search challenges..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-md text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+              />
+            </div>
+          )}
         </div>
 
-        {/* Table Container */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-zinc-950 border-b border-zinc-800 text-zinc-400 font-semibold uppercase tracking-wider">
-                <tr>
-                  <th className="px-4 py-3">#</th>
-                  <th className="px-4 py-3">Title</th>
-                  <th className="px-4 py-3">Category</th>
-                  <th className="px-4 py-3">Difficulty</th>
-                  <th className="px-4 py-3">Type</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Author</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-800/60">
-                {filteredChallenges.length > 0 ? (
-                  filteredChallenges.map((c) => (
-                    <tr key={c.id} className="hover:bg-zinc-800/40 transition-colors">
-                      <td className="px-4 py-3 font-mono font-medium text-zinc-400">{c.id}</td>
-                      <td className="px-4 py-3 font-medium text-white max-w-xs truncate">{c.title}</td>
-                      <td className="px-4 py-3 text-zinc-400">{c.category}</td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded border ${getDifficultyBadge(
-                            c.difficulty
-                          )}`}
-                        >
-                          {c.difficulty}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
-                            c.type === 'CORE'
-                              ? 'bg-blue-950 text-blue-400'
-                              : 'bg-purple-950 text-purple-400'
-                          }`}
-                        >
-                          {c.type}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded border ${getStatusBadge(
-                            c.status
-                          )}`}
-                        >
-                          {c.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-zinc-400">
-                        {c.authorName ? `@${c.authorName}` : 'Curriculum'}
-                      </td>
-                      <td className="px-4 py-3 text-right space-x-1.5 whitespace-nowrap">
-                        {c.status === 'PENDING' ? (
-                          <button
-                            onClick={() => setReviewChallenge(c)}
-                            className="px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-semibold text-[11px] transition-colors"
+        {/* Conditional Content: User Directory or Challenge Table */}
+        {activeTab === 'USERS' ? (
+          <UserManagementTable />
+        ) : (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-950 border-b border-zinc-800 text-zinc-400 font-semibold uppercase tracking-wider">
+                  <tr>
+                    <th className="px-4 py-3">#</th>
+                    <th className="px-4 py-3">Title</th>
+                    <th className="px-4 py-3">Category</th>
+                    <th className="px-4 py-3">Difficulty</th>
+                    <th className="px-4 py-3">Type</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Author</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/60">
+                  {filteredChallenges.length > 0 ? (
+                    filteredChallenges.map((c) => (
+                      <tr key={c.id} className="hover:bg-zinc-800/40 transition-colors">
+                        <td className="px-4 py-3 font-mono font-medium text-zinc-400">{c.id}</td>
+                        <td className="px-4 py-3 font-medium text-white max-w-xs truncate">{c.title}</td>
+                        <td className="px-4 py-3 text-zinc-400">{c.category}</td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded border ${getDifficultyBadge(
+                              c.difficulty
+                            )}`}
                           >
-                            Review
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setEditChallenge(c);
-                              setShowEditModal(true);
-                            }}
-                            className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white font-medium text-[11px] transition-colors"
+                            {c.difficulty}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
+                              c.type === 'CORE'
+                                ? 'bg-blue-950 text-blue-400'
+                                : 'bg-purple-950 text-purple-400'
+                            }`}
                           >
-                            Edit
-                          </button>
-                        )}
+                            {c.type}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded border ${getStatusBadge(
+                              c.status
+                            )}`}
+                          >
+                            {c.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-zinc-400">
+                          {c.authorName ? `@${c.authorName}` : 'Curriculum'}
+                        </td>
+                        <td className="px-4 py-3 text-right space-x-1.5 whitespace-nowrap">
+                          {c.status === 'PENDING' ? (
+                            <button
+                              onClick={() => setReviewChallenge(c)}
+                              className="px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-semibold text-[11px] transition-colors"
+                            >
+                              Review
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setEditChallenge(c);
+                                setShowEditModal(true);
+                              }}
+                              className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white font-medium text-[11px] transition-colors"
+                            >
+                              Edit
+                            </button>
+                          )}
 
-                        <button
-                          onClick={() => handleDelete(c.id)}
-                          className="px-2.5 py-1 rounded bg-rose-950/60 hover:bg-rose-900/80 text-rose-400 font-medium text-[11px] border border-rose-800/80 transition-colors"
-                        >
-                          Delete
-                        </button>
+                          <button
+                            onClick={() => handleDelete(c.id)}
+                            className="px-2.5 py-1 rounded bg-rose-950/60 hover:bg-rose-900/80 text-rose-400 font-medium text-[11px] border border-rose-800/80 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={8} className="px-4 py-8 text-center text-zinc-500">
+                        No challenges found in this view.
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-zinc-500">
-                      No challenges found in this view.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
       </main>
 
       {/* Review Modal */}
