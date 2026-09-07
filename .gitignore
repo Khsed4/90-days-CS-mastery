@@ -3,11 +3,12 @@ node_modules/
 .pnp
 .pnp.js
 
-# Build Outputs
+# Build Outputs & Nx Cache
 dist/
 build/
 .next/
 out/
+.nx/
 *.tsbuildinfo
 
 # Environment Variables (Keep secrets safe!)

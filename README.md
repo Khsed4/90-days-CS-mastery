@@ -1,72 +1,208 @@
 # 🚀 90-Days Computer Science Challenges Platform
 
-An ultra-modern, full-stack learning platform and curriculum tracking system for mastering 90 days of Computer Science algorithms, data structures, and system concepts. Built with a **Domain-Driven Design (DDD) Clean Architecture** in NestJS and a responsive glassmorphic frontend in Next.js 14.
+A scalable, production-ready full-stack learning platform for mastering 90 days of Computer Science algorithms, data structures, and system design concepts.
+
+Built as an **Nx Monorepo** featuring a **NestJS REST API** backend, **Next.js 14 App Router** frontend, **Prisma ORM with MySQL**, and cleanly segregated shared libraries.
 
 ---
 
-## ✨ Key Features
+## 🏛️ Monorepo Architecture & Directory Structure
 
-- **🗺️ 90-Day Progressive Curriculum**: Structured 3-phase roadmap with Big-O analysis, algorithmic theory, prerequisites, constraints, and reference solutions in both **Java** and **TypeScript**.
-- **🎮 Guest Trial Mode**: New visitors can immediately solve **Days 1, 2, and 3** for free in `localStorage` without creating an account. Completing Day 3 prompts a seamless sign-up barrier with automatic cloud synchronization.
-- **✉️ 6-Digit Email OTP Verification**: Secure password authentication paired with 6-digit one-time passcodes (with automatic dev console ASCII fallback if SMTP is unconfigured).
-- **⭐ Community Bonus Challenges Hub**: Registered developers can author, solve, and publish custom coding challenges with Java/TypeScript test cases.
-- **🛡️ Role-Protected Admin Dashboard (`/admin`)**:
-  - Real-time platform analytics (users, completions, pending submissions).
-  - Curriculum editor & MySQL CRUD studio.
-  - 1-click submission review, approval, and global publishing workflow with rejection feedback notes.
-- **🎉 Gamification & Interactive Aesthetics**: Confetti celebration animations on completion, streak counters, code copy-to-clipboard, solution reveal locks, and multi-language support (English, Persian, Pashto).
+```text
+.
+├── apps/
+│   ├── api/                              # NestJS REST API Backend
+│   │   ├── project.json                  # Nx project config (tags: ["scope:api"])
+│   │   ├── tsconfig.json
+│   │   └── src/
+│   │       ├── main.ts                   # App entrypoint & Swagger setup (/api/docs)
+│   │       ├── app/                      # Root application module
+│   │       ├── database/                 # Prisma database access infrastructure
+│   │       │   ├── prisma.module.ts
+│   │       │   └── prisma.service.ts
+│   │       ├── common/                   # Cross-cutting guards, decorators, filters
+│   │       └── modules/                  # Flattened NestJS feature modules
+│   │           ├── auth/                 # Authentication, JWT & guards
+│   │           ├── challenges/           # 90-day challenge curriculum & moderation
+│   │           ├── progress/             # User streak & daily completion tracking
+│   │           ├── admin/                # Platform management & statistics
+│   │           └── mail/                 # Email verification service
+│   │
+│   └── web/                              # Next.js 14 App Router Frontend
+│       ├── project.json                  # Nx project config (tags: ["scope:web"])
+│       ├── tsconfig.json
+│       ├── next.config.js
+│       ├── tailwind.config.js
+│       └── src/
+│           ├── app/                      # App router pages & layouts
+│           │   ├── (public)/             # Public authentication routes
+│           │   ├── (dashboard)/          # Authenticated challenge roadmap hub
+│           │   └── admin/                # Admin console & moderation
+│           ├── features/                 # Modular feature slices (auth, admin)
+│           ├── components/               # UI components & layouts
+│           └── services/                 # API client services consuming shared contracts
+│
+├── libs/
+│   └── shared/                           # Nx Shared Libraries (Pure TypeScript)
+│       ├── contracts/                    # Request/Response API contracts (tags: ["scope:shared"])
+│       ├── types/                        # Domain entities & models (tags: ["scope:shared"])
+│       ├── constants/                    # Application constants & enums (tags: ["scope:shared"])
+│       └── utils/                        # Shared utility helper functions (tags: ["scope:shared"])
+│
+├── prisma/
+│   ├── schema.prisma                     # MySQL schema definition
+│   ├── migrations/                       # Timestamped SQL migrations
+│   └── seed.ts                           # Safe, idempotent database seeder
+│
+├── .env.example                          # Environment template
+├── .eslintrc.json                        # Nx module boundary enforcement rules
+├── nx.json                               # Nx workspace orchestration config
+├── package.json                          # Centralized root dependencies & scripts
+├── tsconfig.base.json                    # Monorepo path mapping aliases
+└── tsconfig.json                         # Root TypeScript config
+```
 
 ---
 
-## 🛠️ Technology Stack
+## 📐 Architectural Highlights
 
-| Layer | Technology |
-| :--- | :--- |
-| **Monorepo** | npm / npx workspaces |
-| **Backend** | NestJS, TypeScript, Passport JWT, MySQL2 pool driver, Nodemailer |
-| **Architecture** | Domain-Driven Design (DDD) & Clean Layered Architecture (Controllers -> DTOs -> Services -> Entities -> Repositories) |
-| **Database** | MySQL (Docker) with auto-table initialization and migrations |
-| **Frontend** | Next.js 14 (App Router), React, Vanilla CSS with Glassmorphism, Canvas Confetti |
-| **Package Management** | `npx` / `npm` |
+1. **Centralized Dependency Management**:
+   - Single root `package.json` with `npm` as the package manager.
+   - Applications and shared libraries do not maintain fragmented independent `package.json` files.
+
+2. **Prisma Infrastructure Placement**:
+   - Prisma client and service live in `apps/api/src/database/` as dedicated database infrastructure, keeping `common/` strictly for cross-cutting decorators, filters, and guards.
+
+3. **Strict Module Boundary & Type Segregation**:
+   - `libs/shared/contracts/`: Pure TypeScript interfaces for client-server API contracts (zero `class-validator` runtime dependencies).
+   - `apps/api/src/modules/*/dto/`: NestJS-owned validation DTOs decorated with `class-validator` and `@nestjs/swagger` annotations implementing the shared contracts.
+   - Nx tags (`scope:api`, `scope:web`, `scope:shared`) enforce architectural boundaries via ESLint.
+
+4. **Modular Frontend Slices**:
+   - Next.js UI is organized by feature slices under `apps/web/src/features/` with clean service wrappers and state providers.
 
 ---
 
-## 🚀 Quick Start Guide
+## 🛠️ Step-by-Step Setup & Running Guide
 
-### 1. Prerequisites
-Ensure MySQL is running (e.g. via Docker on port 3306):
+Follow these steps to set up and run the project from scratch.
+
+### Step 1: Prerequisites
+
+Make sure you have installed:
+- **Node.js**: `v18.18+` or `v20+` (`node -v`)
+- **npm**: `v9+` or `v10+` (`npm -v`)
+- **MySQL**: Server running locally on `127.0.0.1:3306`
+
+---
+
+### Step 2: Configure the `nx` CLI Shortcut
+
+To run `nx` commands directly in your terminal without typing `npx nx`, add an alias to your shell profile:
+
+**For macOS / Linux (zsh):**
 ```bash
-docker run --name mysql-90days -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 -d mysql:8.0
+echo 'alias nx="npx nx"' >> ~/.zshrc && source ~/.zshrc
 ```
 
-### 2. Configure Environment Variables
-Copy the example environment files:
-```bash
-# Backend (.env)
-cp apps/backend/.env.example apps/backend/.env
+*(Alternatively, install globally with `sudo npm install -g nx`, or use `npx nx <command>`)*.
 
-# Frontend (.env.local)
-cp apps/frontend/.env.example apps/frontend/.env.local
+---
+
+### Step 3: Install Dependencies
+
+Install all monorepo dependencies from the root directory:
+
+```bash
+npm install
 ```
 
-### 3. Seed Database (Admin + 90 Challenges)
-Seed the Admin user and all 90 Computer Science challenges into MySQL:
+---
+
+### Step 4: Environment Configuration
+
+Copy the example environment template to `.env`:
+
 ```bash
-npx ts-node apps/backend/src/seed.ts
+cp .env.example .env
 ```
 
-### 4. Run Development Servers
-Run both Backend and Frontend concurrently:
-```bash
-npm run dev
+Open `.env` and verify your MySQL credentials and application settings:
+
+```env
+# Database Connection (MySQL Prisma URL)
+DATABASE_URL="mysql://root:root@127.0.0.1:3306/challenges_90days"
+
+# Backend Server Configuration
+PORT=4000
+
+# JWT Authentication Secrets
+JWT_SECRET="super-secret-jwt-key-change-in-production"
+JWT_REFRESH_SECRET="super-secret-refresh-jwt-key-change-in-production"
+JWT_EXPIRES_IN="7d"
+
+# Default Admin Seed Account
+SEED_ADMIN_EMAIL="admin@example.com"
+SEED_ADMIN_PASSWORD="admin"
+
+# Frontend Public API URL
+NEXT_PUBLIC_API_URL="http://localhost:4000/api"
 ```
 
-* **Frontend**: [http://localhost:3000](http://localhost:3000)
-* **Backend API**: [http://localhost:4000/api](http://localhost:4000/api)
+---
 
-> **Alternative (Separate Terminals):**
-> - **Backend**: `npm run dev:backend` (or `npx nest start --path apps/backend/tsconfig.json --watch`)
-> - **Frontend**: `npm run dev:frontend` (or `npx next dev apps/frontend -p 3000`)
+### Step 5: Database Setup & Seeding
+
+Initialize the MySQL database, apply migrations, and seed initial data using Nx targets:
+
+```bash
+# 1. Generate Prisma Client
+nx run api:db-generate
+
+# 2. Apply database migrations
+nx run api:db-deploy
+
+# 3. Seed default Admin account and challenge roadmap (idempotent)
+nx run api:db-seed
+```
+
+> 💡 **Tip**: To inspect or edit the database in a browser UI, run:
+> ```bash
+> nx run api:db-studio
+> ```
+
+---
+
+### Step 6: Start the Development Servers
+
+Start both the NestJS API and Next.js Frontend concurrently in parallel:
+
+```bash
+nx run-many -t serve --parallel
+```
+
+Or start individual services independently:
+
+```bash
+# Start NestJS Backend only
+nx serve api
+
+# Start Next.js Frontend only
+nx serve web
+```
+
+---
+
+## 🌐 Application URLs
+
+Once the dev servers are running, access the services at:
+
+| Service | URL | Description |
+| :--- | :--- | :--- |
+| 🖥️ **Frontend Web App** | **[http://localhost:3000](http://localhost:3000)** | Next.js 14 Roadmap Hub, challenges, and user dashboard |
+| ⚡ **Backend REST API** | **[http://localhost:4000/api](http://localhost:4000/api)** | NestJS API root endpoint |
+| 📚 **Swagger Documentation** | **[http://localhost:4000/api/docs](http://localhost:4000/api/docs)** | Interactive OpenAPI test console & documentation |
+| 🗄️ **Prisma Studio** | **[http://localhost:5555](http://localhost:5555)** | *(When `nx run api:db-studio` is running)* |
 
 ---
 
@@ -74,19 +210,42 @@ npm run dev
 
 | Role | Email | Password | Access |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `admin@example.com` | `admin` | Full platform admin, `/admin` portal, moderation & challenge publishing |
-| **Guest** | *No account required* | *None* | Days 1–3 free trial access |
+| **Admin** | `admin@example.com` | `admin` | Full moderation console, challenge approvals, platform metrics |
+| **User** | *Register at `/register`* | *Custom* | 90-day learning curriculum, code submissions, progress tracker |
 
 ---
 
 ## 📦 Production Build
 
+To compile all applications and shared libraries for production:
+
 ```bash
-# Build Backend & Frontend
-npm run build
+# Build all apps & libs
+nx run-many -t build
+
+# Or build individual projects
+nx build api    # Compiles NestJS backend to dist/apps/api
+nx build web    # Generates Next.js optimized production bundle
+```
+
+---
+
+## ⚡ Helpful Nx Monorepo Commands
+
+```bash
+# View interactive project dependency graph
+nx graph
+
+# Build or test only what has changed since git main branch
+nx affected -t build
+nx affected -t lint
+
+# Clear Nx local computation cache
+nx reset
 ```
 
 ---
 
 ## 📄 License
+
 MIT License

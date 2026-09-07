@@ -1,0 +1,77 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id              String      @id @default(uuid())
+  email           String      @unique
+  password        String
+  name            String
+  role            Role        @default(USER)
+  isEmailVerified Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  progress        Progress?
+  challenges      Challenge[]
+
+  @@map("users")
+}
+
+model EmailVerification {
+  id        String   @id @default(uuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([code])
+  @@map("email_verifications")
+}
+
+model Challenge {
+  id              Int      @id @default(autoincrement())
+  title           String   @db.VarChar(255)
+  difficulty      String   @db.VarChar(50)
+  category        String   @db.VarChar(100)
+  prerequisite    String   @db.MediumText
+  description     String   @db.MediumText
+  examples        String   @db.MediumText
+  constraints     String   @db.MediumText
+  java            String   @db.LongText
+  ts              String   @db.LongText
+  type            String   @default("CORE") @db.VarChar(50)
+  status          String   @default("APPROVED") @db.VarChar(50)
+  authorId        String?  @db.VarChar(36)
+  authorName      String?  @db.VarChar(255)
+  rejectionReason String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  author          User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([type, status])
+  @@index([authorId])
+  @@map("challenges")
+}
+
+model Progress {
+  id            String   @id @default(uuid())
+  userId        String   @unique @db.VarChar(36)
+  completedDays String   @db.MediumText
+  streak        Int      @default(0)
+  interfaceLang String   @default("en") @db.VarChar(10)
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("progress")
+}

@@ -1,0 +1,185 @@
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { PrismaService } from '../../database/prisma.service';
+import { MailService } from '../mail/mail.service';
+import { RegisterDto, LoginDto } from './dto';
+import { AuthResponse, SendCodeResponse } from '@shared/contracts';
+import { User, UserRole } from '@shared/types';
+import { Role } from '@prisma/client';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+    private mailService: MailService,
+  ) {}
+
+  private generate6DigitOtp(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  private buildAuthResponse(user: {
+    id: string;
+    email: string;
+    name: string;
+    role: Role;
+    isEmailVerified: boolean;
+    createdAt: Date;
+  }): AuthResponse {
+    const payload = { sub: user.id, email: user.email, role: user.role };
+    const token = this.jwtService.sign(payload);
+    return {
+      accessToken: token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role as UserRole,
+        isEmailVerified: user.isEmailVerified,
+        createdAt: user.createdAt.toISOString(),
+      },
+      requiresEmailVerification: !user.isEmailVerified,
+    };
+  }
+
+  async register(dto: RegisterDto): Promise<AuthResponse> {
+    const existing = await this.prisma.user.findUnique({
+      where: { email: dto.email.toLowerCase() },
+    });
+    if (existing) {
+      throw new ConflictException('Email already registered');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const user = await this.prisma.user.create({
+      data: {
+        email: dto.email.toLowerCase(),
+        password: hashedPassword,
+        name: dto.name,
+        role: Role.USER,
+        isEmailVerified: false,
+        progress: {
+          create: {
+            completedDays: '[]',
+            streak: 0,
+            interfaceLang: 'en',
+          },
+        },
+      },
+    });
+
+    // Generate & send OTP
+    const code = this.generate6DigitOtp();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
+    await this.prisma.emailVerification.create({
+      data: {
+        email: user.email,
+        code,
+        expiresAt,
+      },
+    });
+
+    await this.mailService.sendOtpCode(user.email, code, user.name);
+
+    return this.buildAuthResponse(user);
+  }
+
+  async login(dto: LoginDto): Promise<AuthResponse> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email.toLowerCase() },
+    });
+    if (!user || !user.password) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const isMatch = await bcrypt.compare(dto.password, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    return this.buildAuthResponse(user);
+  }
+
+  async sendVerificationCode(email: string): Promise<SendCodeResponse> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+    if (!user) {
+      throw new NotFoundException('No user found with this email address');
+    }
+
+    await this.prisma.emailVerification.deleteMany({
+      where: { email: user.email },
+    });
+
+    const code = this.generate6DigitOtp();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await this.prisma.emailVerification.create({
+      data: {
+        email: user.email,
+        code,
+        expiresAt,
+      },
+    });
+
+    await this.mailService.sendOtpCode(user.email, code, user.name);
+
+    return {
+      success: true,
+      message: 'Verification code sent successfully',
+    };
+  }
+
+  async verifyCode(email: string, code: string): Promise<AuthResponse> {
+    const record = await this.prisma.emailVerification.findFirst({
+      where: {
+        email: email.toLowerCase(),
+        code,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!record) {
+      throw new BadRequestException('Invalid or expired verification code');
+    }
+
+    const user = await this.prisma.user.update({
+      where: { email: email.toLowerCase() },
+      data: { isEmailVerified: true },
+    });
+
+    await this.prisma.emailVerification.deleteMany({
+      where: { email: email.toLowerCase() },
+    });
+
+    return this.buildAuthResponse(user);
+  }
+
+  async getProfile(userId: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role as UserRole,
+      isEmailVerified: user.isEmailVerified,
+      createdAt: user.createdAt.toISOString(),
+    };
+  }
+}
