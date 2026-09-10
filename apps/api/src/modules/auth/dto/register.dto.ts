@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 import { RegisterRequest } from '@shared/contracts';
 
 export class RegisterDto implements RegisterRequest {
@@ -18,6 +18,7 @@ export class RegisterDto implements RegisterRequest {
   name: string;
 
   @ApiProperty({ example: 'org-invite-token-123', description: 'Optional organization invitation token', required: false })
+  @IsOptional()
   @IsString()
   @MinLength(3)
   inviteToken?: string;

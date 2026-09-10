@@ -14,7 +14,7 @@ CREATE TABLE `organizations` (
     UNIQUE INDEX `organizations_slug_key`(`slug`),
     UNIQUE INDEX `organizations_ownerId_key`(`ownerId`),
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `organization_invites` (
@@ -32,7 +32,7 @@ CREATE TABLE `organization_invites` (
     INDEX `organization_invites_token_idx`(`token`),
     INDEX `organization_invites_organizationId_idx`(`organizationId`),
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateIndex
 CREATE INDEX `users_organizationId_idx` ON `users`(`organizationId`);

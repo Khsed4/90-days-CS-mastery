@@ -82,6 +82,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchUserData = async (activeToken?: string) => {
     try {
       const profile = await authService.getProfile();
+      if (!profile.isEmailVerified) {
+        logout();
+        return;
+      }
       setUser(profile);
 
       if (profile.role === 'USER') {

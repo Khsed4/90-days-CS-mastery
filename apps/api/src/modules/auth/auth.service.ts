@@ -37,6 +37,26 @@ export class AuthService {
     return `${base || 'org'}-${randomSuffix}`;
   }
 
+  private async createAndSendOtp(email: string, name: string): Promise<string> {
+    await this.prisma.emailVerification.deleteMany({
+      where: { email },
+    });
+
+    const code = this.generate6DigitOtp();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await this.prisma.emailVerification.create({
+      data: {
+        email,
+        code,
+        expiresAt,
+      },
+    });
+
+    await this.mailService.sendOtpCode(email, code, name);
+    return code;
+  }
+
   private buildAuthResponse(
     user: {
       id: string;
@@ -50,13 +70,15 @@ export class AuthService {
       createdAt: Date;
     },
   ): AuthResponse {
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-      organizationId: user.organizationId || user.ownedOrg?.id || null,
-    };
-    const token = this.jwtService.sign(payload);
+    // Only generate an active access token if the email is verified
+    const token = user.isEmailVerified
+      ? this.jwtService.sign({
+          sub: user.id,
+          email: user.email,
+          role: user.role,
+          organizationId: user.organizationId || user.ownedOrg?.id || null,
+        })
+      : '';
 
     const orgEntity = user.organization || user.ownedOrg;
 
@@ -121,7 +143,7 @@ export class AuthService {
         password: hashedPassword,
         name: dto.name.trim(),
         role: Role.USER,
-        isEmailVerified: true,
+        isEmailVerified: false,
         organizationId: resolvedOrgId,
         progress: {
           create: {
@@ -135,6 +157,8 @@ export class AuthService {
         organization: true,
       },
     });
+
+    await this.createAndSendOtp(user.email, user.name);
 
     return this.buildAuthResponse(user);
   }
@@ -158,7 +182,7 @@ export class AuthService {
         password: hashedPassword,
         name: dto.name.trim(),
         role: Role.ORGANIZATION,
-        isEmailVerified: true,
+        isEmailVerified: false,
         ownedOrg: {
           create: {
             name: dto.organizationName.trim(),
@@ -177,6 +201,8 @@ export class AuthService {
         ownedOrg: true,
       },
     });
+
+    await this.createAndSendOtp(user.email, user.name);
 
     return this.buildAuthResponse(user);
   }
@@ -198,6 +224,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    if (!user.isEmailVerified) {
+      await this.createAndSendOtp(user.email, user.name);
+    }
+
     return this.buildAuthResponse(user);
   }
 
@@ -209,22 +239,7 @@ export class AuthService {
       throw new NotFoundException('No user found with this email address');
     }
 
-    await this.prisma.emailVerification.deleteMany({
-      where: { email: user.email },
-    });
-
-    const code = this.generate6DigitOtp();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-    await this.prisma.emailVerification.create({
-      data: {
-        email: user.email,
-        code,
-        expiresAt,
-      },
-    });
-
-    await this.mailService.sendOtpCode(user.email, code, user.name);
+    await this.createAndSendOtp(user.email, user.name);
 
     return {
       success: true,

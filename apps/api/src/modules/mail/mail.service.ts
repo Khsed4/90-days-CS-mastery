@@ -14,13 +14,31 @@ export class MailService {
     const pass = this.configService.get<string>('SMTP_PASS');
 
     if (host && user && pass) {
-      this.transporter = nodemailer.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: { user, pass },
+      const isGmail = host.includes('gmail.com');
+      this.transporter = nodemailer.createTransport(
+        isGmail
+          ? {
+              service: 'gmail',
+              auth: { user, pass },
+            }
+          : {
+              host,
+              port,
+              secure: port === 465,
+              auth: { user, pass },
+              tls: { rejectUnauthorized: false },
+            },
+      );
+
+      this.transporter.verify((err) => {
+        if (err) {
+          this.logger.warn(
+            `⚠️ SMTP Connection Warning: ${err.message}. If using Gmail, you MUST use a 16-character App Password (https://myaccount.google.com/apppasswords), NOT your normal Gmail password.`,
+          );
+        } else {
+          this.logger.log(`✅ MailService successfully connected to SMTP host: ${host}:${port}`);
+        }
       });
-      this.logger.log(`MailService initialized with SMTP host: ${host}:${port}`);
     } else {
       this.logger.log('MailService running in DEV mode (OTP will be printed to terminal console)');
     }
@@ -59,8 +77,14 @@ export class MailService {
       });
       this.logger.log(`Verification email sent to ${email}`);
       return true;
-    } catch (error) {
-      this.logger.error(`Failed to send email to ${email}:`, error);
+    } catch (error: any) {
+      if (error?.code === 'EAUTH' || error?.message?.includes('socket close')) {
+        this.logger.error(
+          `❌ Gmail Authentication Failed for ${email}. Google rejected the credentials because you provided a standard account password instead of a 16-character App Password. Visit https://myaccount.google.com/apppasswords to create one.`,
+        );
+      } else {
+        this.logger.error(`Failed to send email to ${email}:`, error);
+      }
       return false;
     }
   }

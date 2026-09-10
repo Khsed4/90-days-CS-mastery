@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { useAuth } from '@/features/auth';
+import { useAuth, OtpVerificationModal } from '@/features/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { translations } from '@/lib/translations';
 import { organizationService } from '@/services/organization.service';
 
 function RegisterForm() {
-  const { user, register, registerOrganization, refreshUser, logout } = useAuth();
+  const { user, register, registerOrganization, refreshUser, logout, handleAuthSuccess } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -29,6 +29,11 @@ function RegisterForm() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [joiningExisting, setJoiningExisting] = useState(false);
+
+  // OTP Verification Modal State
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [registeredRole, setRegisteredRole] = useState<'USER' | 'ORGANIZATION'>('USER');
 
   const t = translations.en;
 
@@ -64,26 +69,50 @@ function RegisterForm() {
 
     try {
       if (accountType === 'ORGANIZATION') {
-        await registerOrganization(
+        const targetEmail = orgEmail.toLowerCase().trim();
+        const res = await registerOrganization(
           orgName.trim(),
           adminName.trim(),
-          orgEmail.toLowerCase().trim(),
+          targetEmail,
           orgPassword,
         );
-        router.push('/organization');
+        if (res.requiresEmailVerification) {
+          setPendingEmail(targetEmail);
+          setRegisteredRole('ORGANIZATION');
+          setShowOtpModal(true);
+        } else {
+          router.push('/organization');
+        }
       } else {
-        await register(
-          email.toLowerCase().trim(),
+        const targetEmail = email.toLowerCase().trim();
+        const res = await register(
+          targetEmail,
           password,
           name.trim(),
           inviteToken ? inviteToken.trim() : undefined,
         );
-        router.push('/');
+        if (res.requiresEmailVerification) {
+          setPendingEmail(targetEmail);
+          setRegisteredRole('USER');
+          setShowOtpModal(true);
+        } else {
+          router.push('/');
+        }
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Please check your details.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleOtpSuccess = (authData: any) => {
+    handleAuthSuccess(authData);
+    setShowOtpModal(false);
+    if (authData.user?.role === 'ORGANIZATION') {
+      router.push('/organization');
+    } else {
+      router.push('/');
     }
   };
 
@@ -351,6 +380,15 @@ function RegisterForm() {
           </div>
         </div>
       </div>
+
+      {showOtpModal && (
+        <OtpVerificationModal
+          isOpen={showOtpModal}
+          email={pendingEmail}
+          onClose={() => setShowOtpModal(false)}
+          onSuccess={handleOtpSuccess}
+        />
+      )}
     </div>
   );
 }
