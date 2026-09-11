@@ -26,6 +26,10 @@ model User {
   organization    Organization?  @relation("OrgMembers", fields: [organizationId], references: [id], onDelete: SetNull)
   ownedOrg        Organization?  @relation("OrgOwner")
   
+  // Language & Category Preferences
+  selectedLanguage    String?    @default("typescript") @db.VarChar(50)
+  selectedCategories  String?    @db.Text
+
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   progress        Progress?
@@ -43,6 +47,12 @@ model Organization {
   owner       User                 @relation("OrgOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   members     User[]               @relation("OrgMembers")
   invites     OrganizationInvite[]
+  challenges  Challenge[]
+
+  // Curriculum restrictions: JSON arrays of language/category IDs
+  allowedLanguages    String?    @db.Text
+  allowedCategories   String?    @db.Text
+
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
 
@@ -94,12 +104,21 @@ model Challenge {
   authorId        String?  @db.VarChar(36)
   authorName      String?  @db.VarChar(255)
   rejectionReason String?  @db.Text
+
+  // Organization association for ORG_APPROVED challenges
+  organizationId  String?  @db.VarChar(36)
+  organization    Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  // Multi-language solutions stored as JSON: { "python": "...", "go": "..." }
+  solutions       String?  @db.LongText
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   author          User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([type, status])
   @@index([authorId])
+  @@index([organizationId])
   @@map("challenges")
 }
 

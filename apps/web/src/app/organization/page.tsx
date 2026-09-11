@@ -9,6 +9,8 @@ import {
   OrgInviteHub,
   OrgMembersTable,
   MemberProgressModal,
+  OrgChallengesModeration,
+  OrgCurriculumSettings,
 } from '@/features/organization';
 import { organizationService } from '@/services/organization.service';
 import { OrganizationMember, OrganizationInvite, OrganizationStats } from '@shared/types';
@@ -17,6 +19,7 @@ export default function OrganizationDashboardPage() {
   const { user, token, loading: authLoading } = useAuth();
   const router = useRouter();
 
+  const [activeTab, setActiveTab] = useState<'members' | 'challenges' | 'curriculum'>('members');
   const [orgStats, setOrgStats] = useState<OrganizationStats | null>(null);
   const [orgName, setOrgName] = useState('Organization');
   const [members, setMembers] = useState<OrganizationMember[]>([]);
@@ -117,16 +120,67 @@ export default function OrganizationDashboardPage() {
           <OrgStatsBanner stats={orgStats} orgName={orgName} />
         )}
 
-        <OrgInviteHub invites={invites} onInvitesChanged={loadData} />
+        {/* Tab Navigation */}
+        <div className="flex items-center gap-2 border-b border-zinc-800 pb-1">
+          <button
+            onClick={() => setActiveTab('members')}
+            className={`flex items-center gap-2 py-2 px-4 rounded-lg text-xs font-semibold transition-all ${
+              activeTab === 'members'
+                ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+            }`}
+          >
+            <span>👥</span>
+            <span>Team Members &amp; Invites</span>
+          </button>
 
-        <OrgMembersTable
-          members={members}
-          loading={loading}
-          search={search}
-          onSearchChange={setSearch}
-          onViewProgress={(m) => setSelectedMember(m)}
-          onRemoveMember={handleRemoveMember}
-        />
+          <button
+            onClick={() => setActiveTab('challenges')}
+            className={`flex items-center gap-2 py-2 px-4 rounded-lg text-xs font-semibold transition-all ${
+              activeTab === 'challenges'
+                ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+            }`}
+          >
+            <span>🎯</span>
+            <span>Team Challenges Moderation</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('curriculum')}
+            className={`flex items-center gap-2 py-2 px-4 rounded-lg text-xs font-semibold transition-all ${
+              activeTab === 'curriculum'
+                ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+            }`}
+          >
+            <span>⚙️</span>
+            <span>Curriculum &amp; Languages</span>
+          </button>
+        </div>
+
+        {/* Tab Contents */}
+        {activeTab === 'members' && (
+          <>
+            <OrgInviteHub invites={invites} onInvitesChanged={loadData} />
+            <OrgMembersTable
+              members={members}
+              loading={loading}
+              search={search}
+              onSearchChange={setSearch}
+              onViewProgress={(m) => setSelectedMember(m)}
+              onRemoveMember={handleRemoveMember}
+            />
+          </>
+        )}
+
+        {activeTab === 'challenges' && (
+          <OrgChallengesModeration />
+        )}
+
+        {activeTab === 'curriculum' && (
+          <OrgCurriculumSettings />
+        )}
       </main>
 
       <MemberProgressModal

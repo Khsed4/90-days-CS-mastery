@@ -90,9 +90,9 @@ export default function AdminPage() {
   }
 
   const filteredChallenges = challenges.filter((c) => {
-    if (activeTab === 'PENDING' && c.status !== 'PENDING') return false;
+    if (activeTab === 'PENDING' && c.status !== 'PENDING' && c.status !== 'ORG_APPROVED') return false;
     if (activeTab === 'CORE' && c.type !== 'CORE') return false;
-    if (activeTab === 'BONUS' && (c.type !== 'BONUS' || c.status === 'PENDING')) return false;
+    if (activeTab === 'BONUS' && (c.type !== 'BONUS' || c.status === 'PENDING' || c.status === 'ORG_APPROVED')) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
       return (
@@ -105,7 +105,7 @@ export default function AdminPage() {
     return true;
   });
 
-  const pendingCount = challenges.filter((c) => c.status === 'PENDING').length;
+  const pendingCount = challenges.filter((c) => c.status === 'PENDING' || c.status === 'ORG_APPROVED').length;
 
   const getDifficultyBadge = (diff: string) => {
     switch (diff.toLowerCase()) {
@@ -124,6 +124,10 @@ export default function AdminPage() {
     switch (status) {
       case 'APPROVED':
         return 'bg-emerald-950 text-emerald-400 border-emerald-800';
+      case 'ORG_APPROVED':
+        return 'bg-purple-950 text-purple-300 border-purple-800';
+      case 'PENDING_ORG':
+        return 'bg-amber-950 text-amber-400 border-amber-800';
       case 'PENDING':
         return 'bg-amber-950 text-amber-400 border-amber-800';
       case 'REJECTED':
@@ -336,12 +340,12 @@ export default function AdminPage() {
                           {c.authorName ? `@${c.authorName}` : 'Curriculum'}
                         </td>
                         <td className="px-4 py-3 text-right space-x-1.5 whitespace-nowrap">
-                          {c.status === 'PENDING' ? (
+                          {c.status === 'PENDING' || c.status === 'ORG_APPROVED' ? (
                             <button
                               onClick={() => setReviewChallenge(c)}
                               className="px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-semibold text-[11px] transition-colors"
                             >
-                              Review
+                              Review &amp; Publish
                             </button>
                           ) : (
                             <button

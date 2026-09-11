@@ -57,6 +57,16 @@ export class AuthService {
     return code;
   }
 
+  private parseJsonArray(json: string | null | undefined): string[] | null {
+    if (!json) return null;
+    try {
+      const parsed = JSON.parse(json);
+      return Array.isArray(parsed) ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
   private buildAuthResponse(
     user: {
       id: string;
@@ -65,8 +75,26 @@ export class AuthService {
       role: Role;
       isEmailVerified: boolean;
       organizationId?: string | null;
-      organization?: { id: string; name: string; slug: string; ownerId: string; createdAt: Date } | null;
-      ownedOrg?: { id: string; name: string; slug: string; ownerId: string; createdAt: Date } | null;
+      selectedLanguage?: string | null;
+      selectedCategories?: string | null;
+      organization?: {
+        id: string;
+        name: string;
+        slug: string;
+        ownerId: string;
+        allowedLanguages?: string | null;
+        allowedCategories?: string | null;
+        createdAt: Date;
+      } | null;
+      ownedOrg?: {
+        id: string;
+        name: string;
+        slug: string;
+        ownerId: string;
+        allowedLanguages?: string | null;
+        allowedCategories?: string | null;
+        createdAt: Date;
+      } | null;
       createdAt: Date;
     },
   ): AuthResponse {
@@ -91,12 +119,16 @@ export class AuthService {
         role: user.role as UserRole,
         isEmailVerified: user.isEmailVerified,
         organizationId: user.organizationId || user.ownedOrg?.id || null,
+        selectedLanguage: (user.selectedLanguage as any) || 'typescript',
+        selectedCategories: this.parseJsonArray(user.selectedCategories),
         organization: orgEntity
           ? {
               id: orgEntity.id,
               name: orgEntity.name,
               slug: orgEntity.slug,
               ownerId: orgEntity.ownerId,
+              allowedLanguages: this.parseJsonArray(orgEntity.allowedLanguages) as any,
+              allowedCategories: this.parseJsonArray(orgEntity.allowedCategories),
               createdAt: orgEntity.createdAt.toISOString(),
             }
           : null,
@@ -175,6 +207,14 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
     const slug = this.generateSlug(dto.organizationName);
 
+    // Serialize allowed languages/categories as JSON (null = all allowed)
+    const allowedLanguagesJson = dto.allowedLanguages && dto.allowedLanguages.length > 0
+      ? JSON.stringify(dto.allowedLanguages)
+      : null;
+    const allowedCategoriesJson = dto.allowedCategories && dto.allowedCategories.length > 0
+      ? JSON.stringify(dto.allowedCategories)
+      : null;
+
     // Create Organization owner and Organization atomically
     const user = await this.prisma.user.create({
       data: {
@@ -187,6 +227,8 @@ export class AuthService {
           create: {
             name: dto.organizationName.trim(),
             slug,
+            allowedLanguages: allowedLanguagesJson,
+            allowedCategories: allowedCategoriesJson,
             invites: {
               create: {
                 token: crypto.randomUUID(),
@@ -290,25 +332,7 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    const orgEntity = user.organization || user.ownedOrg;
-
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role as UserRole,
-      isEmailVerified: user.isEmailVerified,
-      organizationId: user.organizationId || user.ownedOrg?.id || null,
-      organization: orgEntity
-        ? {
-            id: orgEntity.id,
-            name: orgEntity.name,
-            slug: orgEntity.slug,
-            ownerId: orgEntity.ownerId,
-            createdAt: orgEntity.createdAt.toISOString(),
-          }
-        : null,
-      createdAt: user.createdAt.toISOString(),
-    };
+    const authResponse = this.buildAuthResponse(user);
+    return authResponse.user;
   }
 }

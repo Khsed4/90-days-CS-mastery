@@ -7,7 +7,9 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { challengeService } from '@/services/challenge.service';
 import { translations } from '@/lib/translations';
-import { Challenge } from '@shared/types';
+import { Challenge, ProgrammingLanguage } from '@shared/types';
+import { PROGRAMMING_LANGUAGES } from '@shared/constants';
+import { getStarterCode, LANGUAGE_FILE_NAMES } from '@shared/utils';
 import confetti from 'canvas-confetti';
 
 export default function WorkspacePage({ params }: { params: { id: string } }) {
@@ -20,6 +22,9 @@ export default function WorkspacePage({ params }: { params: { id: string } }) {
     authBarrier,
     openAuthBarrier,
     closeAuthBarrier,
+    selectedLanguage,
+    allowedLanguages,
+    setSelectedLanguage,
   } = useAuth();
   const router = useRouter();
 
@@ -27,7 +32,6 @@ export default function WorkspacePage({ params }: { params: { id: string } }) {
 
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [fetching, setFetching] = useState(true);
-  const [selectedCodeLang, setSelectedCodeLang] = useState<'java' | 'ts'>('java');
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -68,10 +72,19 @@ export default function WorkspacePage({ params }: { params: { id: string } }) {
     }
   };
 
+  const activeCode = challenge
+    ? getStarterCode(
+        challenge.title,
+        selectedLanguage,
+        challenge.ts,
+        challenge.java,
+        challenge.solutions,
+      )
+    : '';
+
   const copyCode = () => {
     if (!solutionRevealed || !challenge) return;
-    const code = selectedCodeLang === 'java' ? challenge.java : challenge.ts;
-    navigator.clipboard.writeText(code);
+    navigator.clipboard.writeText(activeCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
@@ -228,32 +241,33 @@ export default function WorkspacePage({ params }: { params: { id: string } }) {
         {/* Right Column: Code Editor & Reference Solution */}
         <div className="lg:col-span-6 xl:col-span-7 flex flex-col bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
           {/* Editor Header / Controls */}
-          <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-950 border-b border-zinc-800">
-            {/* Language Switcher */}
-            <div className="flex items-center gap-1 bg-zinc-900 p-1 rounded-md border border-zinc-800">
-              <button
-                onClick={() => setSelectedCodeLang('java')}
-                className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
-                  selectedCodeLang === 'java'
-                    ? 'bg-zinc-800 text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200'
-                }`}
-              >
-                Java
-              </button>
-              <button
-                onClick={() => setSelectedCodeLang('ts')}
-                className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
-                  selectedCodeLang === 'ts'
-                    ? 'bg-zinc-800 text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200'
-                }`}
-              >
-                TypeScript
-              </button>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-2.5 bg-zinc-950 border-b border-zinc-800 gap-2">
+            {/* Multi-Language Switcher */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+              {PROGRAMMING_LANGUAGES.filter((l) => allowedLanguages.includes(l.id)).map((lang) => {
+                const isActive = selectedLanguage === lang.id;
+                return (
+                  <button
+                    key={lang.id}
+                    onClick={() => setSelectedLanguage(lang.id)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold transition-all shrink-0 ${
+                      isActive
+                        ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
+                        : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80'
+                    }`}
+                  >
+                    <span>{lang.icon}</span>
+                    <span>{lang.name}</span>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+              <span className="text-[11px] font-mono text-zinc-400 px-2 py-1 rounded bg-zinc-900 border border-zinc-800">
+                📄 {LANGUAGE_FILE_NAMES[selectedLanguage] || 'solution.txt'}
+              </span>
+
               <button
                 onClick={() => setSolutionRevealed(!solutionRevealed)}
                 className="px-2.5 py-1.5 rounded-md text-xs font-medium text-zinc-300 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:text-white transition-colors flex items-center gap-1.5"
@@ -278,7 +292,7 @@ export default function WorkspacePage({ params }: { params: { id: string } }) {
           <div className="flex-1 p-4 bg-zinc-950 font-mono text-xs leading-relaxed text-zinc-200 overflow-auto min-h-[420px]">
             {solutionRevealed ? (
               <pre className="overflow-x-auto whitespace-pre font-mono text-xs leading-relaxed text-zinc-200">
-                <code>{selectedCodeLang === 'java' ? challenge.java : challenge.ts}</code>
+                <code>{activeCode}</code>
               </pre>
             ) : (
               <div className="h-full min-h-[380px] flex flex-col items-center justify-center text-center p-6 space-y-3">

@@ -6,7 +6,31 @@ export type UserRole = 'USER' | 'ORGANIZATION' | 'ADMIN';
 export type InterfaceLanguage = 'en';
 export type DifficultyLevel = 'Easy' | 'Medium' | 'Hard';
 export type ChallengeType = 'CORE' | 'BONUS';
-export type ChallengeStatus = 'APPROVED' | 'PENDING' | 'REJECTED';
+
+/**
+ * Multi-tiered challenge status:
+ * - APPROVED: globally visible to all users (published by admin)
+ * - ORG_APPROVED: visible to all members of the submitting organization (approved by org manager)
+ * - PENDING_ORG: awaiting organization manager review (submitted by an org member)
+ * - PENDING: awaiting admin review (submitted by a standalone user)
+ * - REJECTED: rejected by org or admin
+ */
+export type ChallengeStatus = 'APPROVED' | 'ORG_APPROVED' | 'PENDING_ORG' | 'PENDING' | 'REJECTED';
+
+/**
+ * Supported programming languages on the platform.
+ */
+export type ProgrammingLanguage =
+  | 'java'
+  | 'javascript'
+  | 'typescript'
+  | 'python'
+  | 'cpp'
+  | 'c'
+  | 'csharp'
+  | 'php'
+  | 'go'
+  | 'rust';
 
 // ==========================================
 // Domain Entity Models
@@ -20,6 +44,10 @@ export interface User {
   isEmailVerified: boolean;
   organizationId?: string | null;
   organization?: Organization | null;
+  /** User's currently active programming language */
+  selectedLanguage?: ProgrammingLanguage | null;
+  /** User's selected challenge categories (JSON-serialized array) */
+  selectedCategories?: string[] | null;
   createdAt: string;
 }
 
@@ -28,6 +56,10 @@ export interface Organization {
   name: string;
   slug: string;
   ownerId: string;
+  /** Languages this org permits its members to work in */
+  allowedLanguages?: ProgrammingLanguage[] | null;
+  /** Categories this org permits its members to study */
+  allowedCategories?: string[] | null;
   createdAt: string;
   updatedAt?: string;
   _count?: {
@@ -96,6 +128,11 @@ export interface Challenge {
   authorId?: string | null;
   authorName?: string | null;
   rejectionReason?: string | null;
+  /** The organization that owns this challenge (for ORG_APPROVED challenges) */
+  organizationId?: string | null;
+  organizationName?: string | null;
+  /** Language-specific solutions: Record<ProgrammingLanguage, code> stored as JSON */
+  solutions?: Record<string, string> | null;
   createdAt?: string;
   updatedAt?: string;
 }

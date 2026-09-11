@@ -4,8 +4,10 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { authService } from '../../services/auth.service';
 import { progressService } from '../../services/progress.service';
 import { useGuestProgress } from '../../hooks/useGuestProgress';
-import { User, UserProgress, InterfaceLanguage } from '@shared/types';
+import { User, UserProgress, InterfaceLanguage, ProgrammingLanguage } from '@shared/types';
 import { AuthResponse } from '@shared/contracts';
+import { PROGRAMMING_LANGUAGES } from '@shared/constants';
+import { userService } from '../../services/user.service';
 
 interface AuthBarrierState {
   isOpen: boolean;
@@ -19,11 +21,21 @@ interface AuthContextType {
   isGuest: boolean;
   progress: UserProgress;
   authBarrier: AuthBarrierState;
+  selectedLanguage: ProgrammingLanguage;
+  allowedLanguages: ProgrammingLanguage[];
+  setSelectedLanguage: (lang: ProgrammingLanguage) => Promise<void>;
   openAuthBarrier: (dayId?: number) => void;
   closeAuthBarrier: () => void;
   login: (email: string, password: string) => Promise<AuthResponse>;
   register: (email: string, password: string, name: string, inviteToken?: string) => Promise<AuthResponse>;
-  registerOrganization: (organizationName: string, name: string, email: string, password: string) => Promise<AuthResponse>;
+  registerOrganization: (
+    organizationName: string,
+    name: string,
+    email: string,
+    password: string,
+    allowedLanguages?: ProgrammingLanguage[],
+    allowedCategories?: string[],
+  ) => Promise<AuthResponse>;
   logout: () => void;
   toggleDay: (dayId: number) => Promise<boolean>;
   setInterfaceLang: (lang: InterfaceLanguage) => Promise<void>;
@@ -155,13 +167,76 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return res;
   };
 
+  const ALL_LANGUAGES: ProgrammingLanguage[] = [
+    'java',
+    'javascript',
+    'typescript',
+    'python',
+    'cpp',
+    'c',
+    'csharp',
+    'php',
+    'go',
+    'rust',
+  ];
+
+  const [selectedLanguageState, setSelectedLanguageState] = useState<ProgrammingLanguage>('typescript');
+
+  // Compute allowed languages based on organization
+  const allowedLanguages: ProgrammingLanguage[] = React.useMemo(() => {
+    if (user?.organization?.allowedLanguages && user.organization.allowedLanguages.length > 0) {
+      return user.organization.allowedLanguages as ProgrammingLanguage[];
+    }
+    return ALL_LANGUAGES;
+  }, [user]);
+
+  // Keep selectedLanguage valid according to user or allowedLanguages
+  useEffect(() => {
+    if (user?.selectedLanguage) {
+      if (allowedLanguages.includes(user.selectedLanguage)) {
+        setSelectedLanguageState(user.selectedLanguage);
+        return;
+      }
+    }
+    const saved = typeof window !== 'undefined' ? (localStorage.getItem('selectedLanguage') as ProgrammingLanguage) : null;
+    if (saved && allowedLanguages.includes(saved)) {
+      setSelectedLanguageState(saved);
+    } else if (allowedLanguages.length > 0) {
+      setSelectedLanguageState(allowedLanguages[0]);
+    }
+  }, [user, allowedLanguages]);
+
+  const setSelectedLanguage = async (lang: ProgrammingLanguage) => {
+    setSelectedLanguageState(lang);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedLanguage', lang);
+    }
+    if (user && token) {
+      try {
+        await userService.updatePreferences({ selectedLanguage: lang });
+        setUser((prev) => (prev ? { ...prev, selectedLanguage: lang } : null));
+      } catch (err) {
+        console.error('Failed to sync language preference:', err);
+      }
+    }
+  };
+
   const registerOrganization = async (
     organizationName: string,
     name: string,
     email: string,
     password: string,
+    allowedLanguagesParam?: ProgrammingLanguage[],
+    allowedCategoriesParam?: string[],
   ): Promise<AuthResponse> => {
-    const res = await authService.registerOrganization({ organizationName, name, email, password });
+    const res = await authService.registerOrganization({
+      organizationName,
+      name,
+      email,
+      password,
+      allowedLanguages: allowedLanguagesParam,
+      allowedCategories: allowedCategoriesParam,
+    });
     if (!res.requiresEmailVerification) {
       await handleAuthSuccess(res);
     }
@@ -244,6 +319,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isGuest: !user,
         progress: activeProgress,
         authBarrier,
+        selectedLanguage: selectedLanguageState,
+        allowedLanguages,
+        setSelectedLanguage,
         openAuthBarrier,
         closeAuthBarrier,
         login,

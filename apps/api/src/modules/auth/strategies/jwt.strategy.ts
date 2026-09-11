@@ -20,6 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: { sub: string; email: string }) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
+      include: { ownedOrg: true },
     });
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -30,6 +31,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       name: user.name,
       role: user.role,
       isEmailVerified: user.isEmailVerified,
+      // For regular members: organizationId they belong to; for org owners: their owned org id
+      organizationId: user.organizationId || user.ownedOrg?.id || null,
+      selectedLanguage: user.selectedLanguage || 'typescript',
+      selectedCategories: user.selectedCategories ? JSON.parse(user.selectedCategories) : null,
     };
   }
 }

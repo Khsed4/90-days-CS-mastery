@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { translations } from '@/lib/translations';
 import { organizationService } from '@/services/organization.service';
+import { PROGRAMMING_LANGUAGES } from '@shared/constants';
+import { ProgrammingLanguage } from '@shared/types';
 
 function RegisterForm() {
   const { user, register, registerOrganization, refreshUser, logout, handleAuthSuccess } = useAuth();
@@ -25,6 +27,23 @@ function RegisterForm() {
   const [adminName, setAdminName] = useState('');
   const [orgEmail, setOrgEmail] = useState('');
   const [orgPassword, setOrgPassword] = useState('');
+  const [selectedOrgLangs, setSelectedOrgLangs] = useState<ProgrammingLanguage[]>(
+    PROGRAMMING_LANGUAGES.map((l) => l.id),
+  );
+
+  const toggleOrgLang = (id: ProgrammingLanguage) => {
+    setSelectedOrgLangs((prev) => {
+      if (prev.includes(id)) {
+        if (prev.length === 1) return prev; // At least one language must remain
+        return prev.filter((x) => x !== id);
+      }
+      return [...prev, id];
+    });
+  };
+
+  const selectAllLangs = () => {
+    setSelectedOrgLangs(PROGRAMMING_LANGUAGES.map((l) => l.id));
+  };
 
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -75,6 +94,7 @@ function RegisterForm() {
           adminName.trim(),
           targetEmail,
           orgPassword,
+          selectedOrgLangs,
         );
         if (res.requiresEmailVerification) {
           setPendingEmail(targetEmail);
@@ -341,6 +361,46 @@ function RegisterForm() {
                     placeholder="••••••••"
                     className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-purple-500 transition-colors"
                   />
+                </div>
+
+                {/* Curriculum Language Selection */}
+                <div className="space-y-2 pt-1 border-t border-zinc-800/80">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-semibold text-zinc-300">
+                      Curriculum Languages ({selectedOrgLangs.length} selected)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={selectAllLangs}
+                      className="text-[11px] text-purple-400 hover:text-purple-300 transition-colors"
+                    >
+                      Select All
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 leading-tight">
+                    Team members will only be permitted to solve and view challenges in these languages.
+                  </p>
+                  <div className="grid grid-cols-2 gap-1.5 pt-1">
+                    {PROGRAMMING_LANGUAGES.map((lang) => {
+                      const isSelected = selectedOrgLangs.includes(lang.id);
+                      return (
+                        <button
+                          key={lang.id}
+                          type="button"
+                          onClick={() => toggleOrgLang(lang.id)}
+                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all text-left ${
+                            isSelected
+                              ? 'bg-purple-950/50 border-purple-600/70 text-purple-200'
+                              : 'bg-zinc-950/60 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300'
+                          }`}
+                        >
+                          <span className="text-sm">{lang.icon}</span>
+                          <span className="truncate flex-1">{lang.name}</span>
+                          {isSelected && <span className="text-purple-400 text-xs">✓</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </>
             )}

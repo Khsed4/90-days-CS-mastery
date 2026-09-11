@@ -7,6 +7,7 @@ import { ProgressModule } from '../modules/progress/progress.module';
 import { AdminModule } from '../modules/admin/admin.module';
 import { OrganizationsModule } from '../modules/organizations/organizations.module';
 import { MailModule } from '../modules/mail/mail.module';
+import { UsersModule } from '../modules/users/users.module';
 import { validate } from '../config/env.validation';
 
 @Module({
@@ -22,6 +23,7 @@ import { validate } from '../config/env.validation';
     AdminModule,
     OrganizationsModule,
     MailModule,
+    UsersModule,
   ],
 })
 export class AppModule {}

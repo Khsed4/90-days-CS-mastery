@@ -3,6 +3,7 @@ import {
   ChallengeType,
   ChallengeStatus,
   InterfaceLanguage,
+  ProgrammingLanguage,
   User,
   Challenge,
   UserProgress,
@@ -29,6 +30,10 @@ export interface RegisterOrganizationRequest {
   name: string;
   email: string;
   password: string;
+  /** Languages this org allows its members to use (defaults to all if omitted) */
+  allowedLanguages?: ProgrammingLanguage[];
+  /** Categories this org allows its members to study (defaults to all if omitted) */
+  allowedCategories?: string[];
 }
 
 export interface LoginRequest {
@@ -85,6 +90,35 @@ export interface OrgMemberProgressResponse {
   progress: UserProgress;
 }
 
+/**
+ * Request for an organization manager to review a member's submitted challenge.
+ */
+export interface OrgReviewChallengeRequest {
+  /** 'ORG_APPROVED' to approve for team, 'REJECTED' to reject */
+  status: 'ORG_APPROVED' | 'REJECTED';
+  rejectionReason?: string;
+}
+
+/**
+ * Request for updating organization curriculum settings.
+ */
+export interface UpdateOrgCurriculumRequest {
+  allowedLanguages: ProgrammingLanguage[];
+  allowedCategories: string[];
+}
+
+// ==========================================
+// User Preference Contracts
+// ==========================================
+
+/**
+ * Request for a user to update their active language and category preferences.
+ */
+export interface UpdateUserPreferencesRequest {
+  selectedLanguage?: ProgrammingLanguage;
+  selectedCategories?: string[];
+}
+
 // ==========================================
 // Progress Contracts
 // ==========================================
@@ -131,6 +165,7 @@ export interface UpdateChallengeRequest {
 }
 
 export interface ReviewChallengeRequest {
+  /** Admin can set APPROVED (global) or REJECTED */
   status: 'APPROVED' | 'REJECTED';
   rejectionReason?: string;
 }

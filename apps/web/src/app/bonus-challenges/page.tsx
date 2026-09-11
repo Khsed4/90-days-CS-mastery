@@ -37,13 +37,14 @@ export default function BonusChallengesPage() {
   };
 
   const filteredBonus = bonusChallenges.filter((c) => {
-    if (c.status !== 'APPROVED') return false;
+    if (c.status !== 'APPROVED' && c.status !== 'ORG_APPROVED') return false;
     if (search.trim()) {
       const q = search.toLowerCase();
       return (
         c.title.toLowerCase().includes(q) ||
         c.category.toLowerCase().includes(q) ||
-        (c.authorName && c.authorName.toLowerCase().includes(q))
+        (c.authorName && c.authorName.toLowerCase().includes(q)) ||
+        (c.organizationName && c.organizationName.toLowerCase().includes(q))
       );
     }
     return true;
@@ -65,13 +66,34 @@ export default function BonusChallengesPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'APPROVED':
-        return 'bg-emerald-950 text-emerald-400 border-emerald-800';
+        return 'bg-emerald-950 text-emerald-300 border-emerald-800';
+      case 'ORG_APPROVED':
+        return 'bg-purple-950 text-purple-300 border-purple-800';
+      case 'PENDING_ORG':
+        return 'bg-amber-950 text-amber-300 border-amber-800';
       case 'PENDING':
-        return 'bg-amber-950 text-amber-400 border-amber-800';
+        return 'bg-amber-950 text-amber-300 border-amber-800';
       case 'REJECTED':
-        return 'bg-rose-950 text-rose-400 border-rose-800';
+        return 'bg-rose-950 text-rose-300 border-rose-800';
       default:
         return 'bg-zinc-800 text-zinc-300 border-zinc-700';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'APPROVED':
+        return '🌐 Published Globally';
+      case 'ORG_APPROVED':
+        return '🏢 Approved by Team • Pending Global Admin';
+      case 'PENDING_ORG':
+        return '⏳ Awaiting Team Approval';
+      case 'PENDING':
+        return '⏳ Awaiting Admin Approval';
+      case 'REJECTED':
+        return '✕ Rejected';
+      default:
+        return status;
     }
   };
 
@@ -132,7 +154,7 @@ export default function BonusChallengesPage() {
                           sub.status
                         )}`}
                       >
-                        {sub.status}
+                        {getStatusLabel(sub.status)}
                       </span>
                     </div>
 
@@ -166,8 +188,8 @@ export default function BonusChallengesPage() {
         <section className="space-y-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-zinc-800">
             <div>
-              <h2 className="text-base font-semibold text-white">Published Community Challenges</h2>
-              <p className="text-xs text-zinc-400">Approved algorithmic problems created by community members.</p>
+              <h2 className="text-base font-semibold text-white">Published Community &amp; Team Challenges</h2>
+              <p className="text-xs text-zinc-400">Algorithmic problems approved for team collaboration and global learning.</p>
             </div>
 
             <div className="relative w-full sm:w-64">
@@ -195,8 +217,19 @@ export default function BonusChallengesPage() {
                   className="group p-4 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-lg flex flex-col justify-between space-y-3 transition-colors"
                 >
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono text-zinc-400">Bonus #{c.id}</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-mono text-zinc-400">Bonus #{c.id}</span>
+                        {c.status === 'ORG_APPROVED' ? (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded border bg-purple-950/60 text-purple-300 border-purple-800">
+                            🏢 Team
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded border bg-blue-950/60 text-blue-300 border-blue-800">
+                            🌐 Global
+                          </span>
+                        )}
+                      </div>
                       <span
                         className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${getDifficultyBadge(
                           c.difficulty

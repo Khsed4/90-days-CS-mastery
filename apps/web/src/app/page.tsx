@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { challengeService } from '@/services/challenge.service';
 import { translations } from '@/lib/translations';
-import { Challenge } from '@shared/types';
+import { Challenge, ProgrammingLanguage } from '@shared/types';
+import { PROGRAMMING_LANGUAGES, CS_CATEGORIES } from '@shared/constants';
 
 function ChallengeItem({
   challenge,
@@ -118,6 +119,9 @@ export default function DashboardPage() {
     authBarrier,
     openAuthBarrier,
     closeAuthBarrier,
+    selectedLanguage,
+    allowedLanguages,
+    setSelectedLanguage,
   } = useAuth();
 
   const isObserver = user?.role === 'ADMIN' || user?.role === 'ORGANIZATION';
@@ -126,6 +130,15 @@ export default function DashboardPage() {
   const [fetching, setFetching] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('ALL');
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+
+  // Compute allowed categories based on organization
+  const allowedCategories = useMemo(() => {
+    if (user?.organization?.allowedCategories && user.organization.allowedCategories.length > 0) {
+      return user.organization.allowedCategories;
+    }
+    return CS_CATEGORIES.map((c) => c.name);
+  }, [user]);
 
   const t = translations.en;
 
@@ -155,9 +168,15 @@ export default function DashboardPage() {
         selectedDifficulty === 'ALL' ||
         c.difficulty.toUpperCase() === selectedDifficulty.toUpperCase();
 
-      return matchesSearch && matchesDiff;
+      const matchesCategory =
+        selectedCategory === 'ALL' || c.category === selectedCategory;
+
+      const matchesOrgCategories =
+        allowedCategories.length === 0 || allowedCategories.includes(c.category);
+
+      return matchesSearch && matchesDiff && matchesCategory && matchesOrgCategories;
     });
-  }, [challenges, searchQuery, selectedDifficulty]);
+  }, [challenges, searchQuery, selectedDifficulty, selectedCategory, allowedCategories]);
 
   if (loading || fetching) {
     return (
@@ -287,6 +306,79 @@ export default function DashboardPage() {
               <option value="MEDIUM">Medium</option>
               <option value="HARD">Hard</option>
             </select>
+
+            {/* Category Filter Select */}
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 rounded-md text-xs font-medium text-zinc-300 focus:outline-none focus:border-zinc-700 cursor-pointer max-w-[160px]"
+            >
+              <option value="ALL">All Categories</option>
+              {allowedCategories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Programming Language Selector Bar */}
+        <div className="p-3.5 bg-zinc-900/90 border border-zinc-800 rounded-xl space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-zinc-200">Selected Language:</span>
+              <span className="text-xs text-blue-400 font-mono font-semibold uppercase">
+                {selectedLanguage}
+              </span>
+              {user?.organization && (
+                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-950/80 text-purple-300 border border-purple-800 flex items-center gap-1">
+                  <span>🏢</span>
+                  <span>{user.organization.name} Curriculum Policy</span>
+                </span>
+              )}
+            </div>
+            <span className="text-[11px] text-zinc-500">
+              Code editor &amp; starter solutions adapt to your chosen language
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+            {PROGRAMMING_LANGUAGES.map((lang) => {
+              const isAllowed = allowedLanguages.includes(lang.id);
+              const isActive = selectedLanguage === lang.id;
+
+              if (!isAllowed) {
+                return (
+                  <button
+                    key={lang.id}
+                    disabled
+                    title={`Locked by ${user?.organization?.name || 'organization'} policy`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-zinc-800/40 bg-zinc-950/40 text-zinc-600 cursor-not-allowed opacity-50 shrink-0"
+                  >
+                    <span>{lang.icon}</span>
+                    <span>{lang.name}</span>
+                    <span className="text-[10px]">🔒</span>
+                  </button>
+                );
+              }
+
+              return (
+                <button
+                  key={lang.id}
+                  onClick={() => setSelectedLanguage(lang.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all shrink-0 ${
+                    isActive
+                      ? 'bg-blue-600 text-white border-blue-500 shadow-sm shadow-blue-500/20'
+                      : 'bg-zinc-950/80 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:text-white'
+                  }`}
+                >
+                  <span>{lang.icon}</span>
+                  <span>{lang.name}</span>
+                  {isActive && <span className="text-[10px] font-bold">✓</span>}
+                </button>
+              );
+            })}
           </div>
         </div>
 

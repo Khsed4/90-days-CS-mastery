@@ -41,7 +41,7 @@ export class AdminService {
       where: { type: 'BONUS', status: 'APPROVED' },
     });
     const pendingChallenges = await this.prisma.challenge.count({
-      where: { status: 'PENDING' },
+      where: { status: { in: ['PENDING', 'ORG_APPROVED'] } },
     });
 
     const progressRecords = await this.prisma.progress.findMany();
@@ -139,7 +139,9 @@ export class AdminService {
   }): Promise<Challenge[]> {
     const where: any = {};
     if (options.type) where.type = options.type;
-    if (options.status) where.status = options.status;
+    if (options.status) {
+      where.status = options.status;
+    }
     if (options.search) {
       where.OR = [
         { title: { contains: options.search } },
@@ -149,6 +151,7 @@ export class AdminService {
 
     const list = await this.prisma.challenge.findMany({
       where,
+      include: { organization: true },
       orderBy: { id: 'asc' },
     });
 

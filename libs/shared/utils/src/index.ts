@@ -11,3 +11,5 @@ export function calculateStreak(completedDays: number[]): number {
 export function isTrialDay(dayId: number): boolean {
   return dayId >= 1 && dayId <= 3;
 }
+
+export * from './solutions';

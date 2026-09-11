@@ -6,7 +6,7 @@ import {
   OrgMembersResponse,
   OrgMemberProgressResponse,
 } from '@shared/contracts';
-import { OrganizationInvite } from '@shared/types';
+import { OrganizationInvite, Challenge } from '@shared/types';
 
 export const organizationService = {
   async getOverview(): Promise<OrgOverviewResponse> {
@@ -49,4 +49,29 @@ export const organizationService = {
     const res = await api.post<{ success: boolean; organizationName: string }>('/organizations/join', dto);
     return res.data;
   },
+
+  async getChallenges(): Promise<Challenge[]> {
+    const res = await api.get<Challenge[]>('/organizations/challenges');
+    return res.data;
+  },
+
+  async reviewChallenge(
+    id: number,
+    dto: { status: 'ORG_APPROVED' | 'REJECTED'; rejectionReason?: string },
+  ): Promise<Challenge> {
+    const res = await api.patch<Challenge>(`/organizations/challenges/${id}/review`, dto);
+    return res.data;
+  },
+
+  async updateCurriculum(dto: {
+    allowedLanguages: string[];
+    allowedCategories: string[];
+  }): Promise<{ success: boolean; allowedLanguages: string[]; allowedCategories: string[] }> {
+    const res = await api.put<{ success: boolean; allowedLanguages: string[]; allowedCategories: string[] }>(
+      '/organizations/curriculum',
+      dto,
+    );
+    return res.data;
+  },
 };
+

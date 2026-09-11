@@ -12,7 +12,7 @@ import {
   OrgMembersResponse,
   OrgMemberProgressResponse,
 } from '@shared/contracts';
-import { OrganizationInvite } from '@shared/types';
+import { Challenge, OrganizationInvite, ProgrammingLanguage } from '@shared/types';
 import { TOTAL_ROADMAP_DAYS } from '@shared/constants';
 
 @Injectable()
@@ -42,6 +42,50 @@ export class OrganizationsService {
     } catch {
       return [];
     }
+  }
+
+  private parseJsonArray(json: string | null | undefined): string[] {
+    try {
+      const parsed = JSON.parse(json || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private parseJsonRecord(json: string | null | undefined): Record<string, string> | null {
+    if (!json) return null;
+    try {
+      const parsed = JSON.parse(json);
+      return typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private mapChallenge(item: any): Challenge {
+    return {
+      id: item.id,
+      title: item.title,
+      difficulty: item.difficulty,
+      category: item.category,
+      prerequisite: item.prerequisite,
+      description: item.description,
+      examples: item.examples,
+      constraints: item.constraints,
+      java: item.java,
+      ts: item.ts,
+      type: item.type,
+      status: item.status,
+      authorId: item.authorId,
+      authorName: item.authorName,
+      rejectionReason: item.rejectionReason,
+      organizationId: item.organizationId ?? null,
+      organizationName: item.organization?.name ?? null,
+      solutions: this.parseJsonRecord(item.solutions),
+      createdAt: item.createdAt ? item.createdAt.toISOString() : undefined,
+      updatedAt: item.updatedAt ? item.updatedAt.toISOString() : undefined,
+    };
   }
 
   async getOverview(userId: string): Promise<OrgOverviewResponse> {
@@ -84,6 +128,8 @@ export class OrganizationsService {
         name: org.name,
         slug: org.slug,
         ownerId: org.ownerId,
+        allowedLanguages: this.parseJsonArray(org.allowedLanguages) as ProgrammingLanguage[],
+        allowedCategories: this.parseJsonArray(org.allowedCategories),
         createdAt: org.createdAt.toISOString(),
         _count: {
           members: memberCount,
@@ -317,6 +363,99 @@ export class OrganizationsService {
     return {
       success: true,
       organizationName: invite.organization.name,
+    };
+  }
+
+  // ==========================================
+  // Team Challenge Moderation
+  // ==========================================
+
+  /**
+   * Returns all BONUS challenges submitted by members of this organization
+   * (for org manager review). Includes PENDING_ORG, ORG_APPROVED, and REJECTED.
+   */
+  async getOrgChallenges(userId: string): Promise<Challenge[]> {
+    const org = await this.getOwnedOrganization(userId);
+
+    const challenges = await this.prisma.challenge.findMany({
+      where: {
+        organizationId: org.id,
+        type: 'BONUS',
+      },
+      include: { organization: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return challenges.map((c) => this.mapChallenge(c));
+  }
+
+  /**
+   * Org manager approves (ORG_APPROVED) or rejects a member's challenge submission.
+   */
+  async reviewOrgChallenge(
+    userId: string,
+    challengeId: number,
+    dto: { status: 'ORG_APPROVED' | 'REJECTED'; rejectionReason?: string },
+  ): Promise<Challenge> {
+    const org = await this.getOwnedOrganization(userId);
+
+    const challenge = await this.prisma.challenge.findFirst({
+      where: { id: challengeId, organizationId: org.id, type: 'BONUS' },
+      include: { organization: true },
+    });
+
+    if (!challenge) {
+      throw new NotFoundException('Challenge not found in your organization');
+    }
+
+    if (challenge.status !== 'PENDING_ORG') {
+      throw new BadRequestException('Only challenges with PENDING_ORG status can be reviewed');
+    }
+
+    const updated = await this.prisma.challenge.update({
+      where: { id: challengeId },
+      data: {
+        status: dto.status,
+        rejectionReason: dto.status === 'REJECTED' ? (dto.rejectionReason || null) : null,
+      },
+      include: { organization: true },
+    });
+
+    return this.mapChallenge(updated);
+  }
+
+  // ==========================================
+  // Curriculum Settings
+  // ==========================================
+
+  /**
+   * Update the allowed programming languages and categories for this organization.
+   */
+  async updateCurriculumSettings(
+    userId: string,
+    dto: { allowedLanguages: string[]; allowedCategories: string[] },
+  ): Promise<{ success: boolean; allowedLanguages: string[]; allowedCategories: string[] }> {
+    const org = await this.getOwnedOrganization(userId);
+
+    const allowedLanguagesJson = dto.allowedLanguages.length > 0
+      ? JSON.stringify(dto.allowedLanguages)
+      : null;
+    const allowedCategoriesJson = dto.allowedCategories.length > 0
+      ? JSON.stringify(dto.allowedCategories)
+      : null;
+
+    await this.prisma.organization.update({
+      where: { id: org.id },
+      data: {
+        allowedLanguages: allowedLanguagesJson,
+        allowedCategories: allowedCategoriesJson,
+      },
+    });
+
+    return {
+      success: true,
+      allowedLanguages: dto.allowedLanguages,
+      allowedCategories: dto.allowedCategories,
     };
   }
 }
