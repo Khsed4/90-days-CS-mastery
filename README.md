@@ -50,23 +50,21 @@ NEXT_PUBLIC_API_URL="http://localhost:4000/api"
 
 ### 5. Initialize & Seed Database
 ```bash
-# Generate Prisma Client types
-npx prisma generate
-
 # Apply database migrations
-npx prisma migrate deploy
+npx nx db-deploy
 
 # Seed 90 core challenges and default admin account
-npx nx run api:db-seed
+npx nx db-seed
 ```
 
 ---
 
 ### 6. Start Development Servers
 ```bash
-# Start both Backend API and Frontend Web in parallel
-npx nx run-many -t serve --parallel
+# Start both Backend API and Frontend Web in parallel with a single command:
+npx nx dev
 ```
+*(Or with Nx CLI installed globally: `nx dev`)*
 *(Or start individually: `npx nx serve api` and `npx nx serve web`)*
 
 ---
@@ -77,8 +75,9 @@ npx nx run-many -t serve --parallel
 | :--- | :--- | :--- |
 | 🖥️ **Frontend Web App** | **[http://localhost:3000](http://localhost:3000)** | Next.js Web Portal (Learners, Organizations, Admins) |
 | ⚡ **Backend REST API** | **[http://localhost:4000/api](http://localhost:4000/api)** | NestJS API Root Endpoint |
+| 🔌 **tRPC Protocol API** | **[http://localhost:4000/api/trpc](http://localhost:4000/api/trpc)** | End-to-end type-safe RPC protocol endpoint |
 | 📚 **Swagger Docs** | **[http://localhost:4000/api/docs](http://localhost:4000/api/docs)** | Interactive OpenAPI test console |
-| 🗄️ **Prisma Studio** | **[http://localhost:5555](http://localhost:5555)** | Database GUI browser (`npx nx run api:db-studio`) |
+| 🗄️ **Prisma Studio** | **[http://localhost:5555](http://localhost:5555)** | Database GUI browser (`npx nx db-studio`) |
 
 ---
 
@@ -93,17 +92,21 @@ npx nx run-many -t serve --parallel
 
 ---
 
-## 🛠️ Common Commands
+## 🛠️ Nx Commands Cheatsheet
 
-| Task | Command |
-| :--- | :--- |
-| **Start Dev Servers** | `npx nx run-many -t serve --parallel` |
-| **Build for Production** | `npx nx run-many -t build` |
-| **Run Database Migrations** | `npx prisma migrate deploy` |
-| **Generate Prisma Types** | `npx prisma generate` |
-| **Run Database Seeder** | `npx nx run api:db-seed` |
-| **Open Database Studio** | `npx nx run api:db-studio` |
-| **Clear Monorepo Cache** | `npx nx reset` |
+Run these using `npx nx <command>` or `nx <command>`:
+
+| Task | Command | Description |
+| :--- | :--- | :--- |
+| **Start Dev Servers** | `npx nx dev` | Runs both NestJS (4000) & Next.js (3000) in parallel |
+| **Build for Production** | `npx nx build` | Compiles both API & Web for production with caching |
+| **Start API Backend Only** | `npx nx serve api` | Starts NestJS API in watch mode |
+| **Start Web Frontend Only** | `npx nx serve web` | Starts Next.js frontend dev server |
+| **Run Database Migrations** | `npx nx db-deploy` | Applies all pending migrations to MySQL |
+| **Run Database Seeder** | `npx nx db-seed` | Seeds initial admin & 90 curriculum challenges |
+| **Open Prisma Studio GUI** | `npx nx db-studio` | Launches web database browser on port 5555 |
+| **Run Linting** | `npx nx lint` | Runs ESLint and module boundary checks |
+| **Clear Monorepo Cache** | `npx nx reset` | Clears Nx cache and restarts daemon |
 
 ---
 

@@ -46,5 +46,6 @@
     }
   },
   "defaultBase": "main",
+  "defaultProject": "90-days-cs-mastery",
   "analytics": true
 }

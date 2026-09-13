@@ -1,0 +1,61 @@
+{
+  "name": "90-days-cs-mastery",
+  "$schema": "./node_modules/nx/schemas/project-schema.json",
+  "root": ".",
+  "projectType": "application",
+  "targets": {
+    "dev": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "api:dev",
+        "web:dev"
+      ]
+    },
+    "serve": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "api:serve",
+        "web:serve"
+      ]
+    },
+    "build": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "api:build",
+        "web:build"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "api:lint",
+        "web:lint"
+      ]
+    },
+    "test": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "api:test",
+        "web:test"
+      ]
+    },
+    "db-deploy": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "api:db-deploy"
+      ]
+    },
+    "db-seed": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "api:db-seed"
+      ]
+    },
+    "db-studio": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "api:db-studio"
+      ]
+    }
+  }
+}

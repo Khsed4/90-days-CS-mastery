@@ -8,6 +8,7 @@ import { AdminModule } from '../modules/admin/admin.module';
 import { OrganizationsModule } from '../modules/organizations/organizations.module';
 import { MailModule } from '../modules/mail/mail.module';
 import { UsersModule } from '../modules/users/users.module';
+import { TrpcModule } from '../trpc/trpc.module';
 import { validate } from '../config/env.validation';
 
 @Module({
@@ -24,6 +25,7 @@ import { validate } from '../config/env.validation';
     OrganizationsModule,
     MailModule,
     UsersModule,
+    TrpcModule,
   ],
 })
 export class AppModule {}

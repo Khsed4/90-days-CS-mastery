@@ -110,11 +110,11 @@ SMTP_FROM="no-reply@cs-mastery.dev"
 ### Step 2.5: Initialize Database & Run Migrations
 Run the migrations to create all database tables:
 ```bash
-# Option A: Apply all pre-built migrations (Recommended)
-npx prisma migrate deploy
+# Option A: Run directly through Nx (Recommended)
+npx nx db-deploy
 
-# Option B: Or use Nx shortcut
-npx nx run api:db-deploy
+# Option B: Run with Prisma CLI
+npx prisma migrate deploy
 ```
 
 ### Step 2.6: Generate Prisma Client Types
@@ -127,7 +127,7 @@ npx prisma generate
 Seed the 90 core algorithmic challenges, standard categories, and initial admin account:
 ```bash
 # Using Nx
-npx nx run api:db-seed
+npx nx db-seed
 
 # Or directly with ts-node
 npx ts-node prisma/seed.ts
@@ -136,12 +136,13 @@ npx ts-node prisma/seed.ts
 ### Step 2.8: Start the Development Servers
 Start both the backend API and frontend web application simultaneously:
 ```bash
-npx nx run-many -t serve --parallel
+npx nx dev
 ```
 
 Once running:
 - 🖥️ **Web Application**: [http://localhost:3000](http://localhost:3000)
 - ⚡ **Backend REST API**: [http://localhost:4000/api](http://localhost:4000/api)
+- 🔌 **tRPC Protocol API**: [http://localhost:4000/api/trpc](http://localhost:4000/api/trpc)
 - 📚 **Swagger Interactive Docs**: [http://localhost:4000/api/docs](http://localhost:4000/api/docs)
 
 ---
@@ -315,18 +316,45 @@ At any time, the organization manager can visit `/organization` ➔ **Curriculum
 
 ---
 
+## 8.5. tRPC Protocol Architecture
+
+The platform supports both traditional REST endpoints and the **tRPC protocol** (`http://localhost:4000/api/trpc`), enabling complete end-to-end type safety between the NestJS backend and Next.js frontend without code generation.
+
+### Architecture Highlights
+1. **Server Mount**: The tRPC Express adapter is mounted at `/api/trpc` in NestJS (`apps/api/src/main.ts`), backed by `TrpcModule` and `TrpcService`.
+2. **Context & Authentication**: `createTrpcContextFactory` inspects incoming `Authorization: Bearer <token>` headers, verifies the JWT via `JwtService`, and populates `ctx.user`.
+3. **Guard Middlewares**:
+   - `publicProcedure`: Open to all guests and learners.
+   - `protectedProcedure`: Requires a valid JWT token.
+   - `orgProcedure`: Requires `ORGANIZATION` or `ADMIN` role.
+   - `adminProcedure`: Requires `ADMIN` role.
+4. **Domain Sub-Routers**:
+   - `auth`: `login`, `register`, `registerOrganization`, `sendVerificationCode`, `verifyCode`, `me`
+   - `challenges`: `allCore`, `bonus`, `byId`, `mySubmissions`, `create`
+   - `progress`: `myProgress`, `toggleDay`, `sync`, `updateSettings`, `preferences`, `updatePreferences`
+   - `organizations`: `overview`, `members`, `memberProgress`, `removeMember`, `createInvite`, `invites`, `revokeInvite`, `join`, `challenges`, `reviewChallenge`, `updateCurriculum`
+   - `admin`: `stats`, `users`, `deleteUser`, `challenges`, `reviewChallenge`, `deleteChallenge`
+5. **Frontend Client (`apps/web/src/lib/trpc.ts`)**:
+   - Uses `createTRPCProxyClient<AppRouter>` with `httpBatchLink` pointing to `/api/trpc`.
+   - Automatically injects the JWT token from `localStorage`.
+   - Service wrapper available at `apps/web/src/services/trpc.service.ts`.
+
+---
+
 ## 9. Development & Maintenance Commands
 
 | Action | Command |
 | :--- | :--- |
-| **Start Backend & Frontend** | `npx nx run-many -t serve --parallel` |
-| **Start Backend Only** | `npx nx serve api` |
-| **Start Frontend Only** | `npx nx serve web` |
-| **Run Full Production Build** | `npx nx run-many -t build` |
-| **Apply Database Migrations** | `npx prisma migrate deploy` |
+| **Start Backend & Frontend** | `npx nx dev` (or `nx dev`) |
+| **Start Backend Only** | `npx nx serve api` (or `nx serve api`) |
+| **Start Frontend Only** | `npx nx serve web` (or `nx serve web`) |
+| **Run Full Production Build** | `npx nx build` (or `nx build`) |
+| **Apply Database Migrations** | `npx nx db-deploy` (or `nx db-deploy`) |
 | **Generate Prisma Client** | `npx prisma generate` |
-| **Run Database Seeder** | `npx nx run api:db-seed` |
-| **Launch Database GUI Studio** | `npx nx run api:db-studio` |
+| **Run Database Seeder** | `npx nx db-seed` (or `nx db-seed`) |
+| **Launch Database GUI Studio** | `npx nx db-studio` (or `nx db-studio`) |
+| **Run Linter (Full Repo)** | `npx nx lint` (or `nx lint`) |
+| **Run Unit Tests (Full Repo)** | `npx nx test` (or `nx test`) |
 | **Clear Monorepo Cache** | `npx nx reset` |
 
 ---
