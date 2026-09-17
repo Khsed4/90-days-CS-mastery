@@ -15,21 +15,21 @@
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "next dev -p 3000",
+        "command": "next dev -p 3000 -H 0.0.0.0",
         "cwd": "apps/web"
       }
     },
     "dev": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "next dev -p 3000",
+        "command": "next dev -p 3000 -H 0.0.0.0",
         "cwd": "apps/web"
       }
     },
     "start": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "next start -p 3000",
+        "command": "next start -p 3000 -H 0.0.0.0",
         "cwd": "apps/web"
       }
     },

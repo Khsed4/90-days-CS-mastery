@@ -98,10 +98,10 @@ export const OtpInput: React.FC<OtpInputProps> = ({
           disabled={disabled}
           onChange={(e) => handleChange(idx, e.target.value)}
           onKeyDown={(e) => handleKeyDown(idx, e)}
-          className={`w-11 h-13 text-center text-lg font-bold rounded-md bg-zinc-950 border text-white focus:outline-none transition-colors ${
+          className={`w-11 h-13 text-center text-lg font-bold font-mono rounded-md border transition-colors focus:outline-none ${
             digits[idx]
-              ? 'border-blue-500 bg-blue-950/20'
-              : 'border-zinc-800 focus:border-zinc-600'
+              ? 'bg-zinc-50 dark:bg-zinc-900 border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100'
+              : 'bg-white dark:bg-[#0c0d10] border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 focus:border-zinc-400 dark:focus:border-zinc-600'
           }`}
         />
       ))}

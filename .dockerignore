@@ -1,0 +1,50 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# .dockerignore — keeps build context lean and secure
+# Prevents secrets, caches, and generated files from being sent to Docker daemon
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Version control
+.git
+.gitignore
+
+# Secrets — NEVER include in image
+.env
+.env.local
+.env.*.local
+*.env
+!.env.production.example
+
+# Runtime generated / caches
+node_modules
+.next
+apps/api/dist
+apps/web/.next
+.nx
+*.tsbuildinfo
+
+# IDE and OS
+.vscode
+.idea
+.DS_Store
+*.swp
+*.swo
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Tests
+coverage/
+.nyc_output/
+
+# Docs (not needed in image)
+docs/
+README.md
+DOCUMENTATION.md
+*.md
+
+# Skills / agent config (dev tooling, not app code)
+.agents/
+.zencoder/

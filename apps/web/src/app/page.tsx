@@ -9,7 +9,18 @@ import { translations } from '@/lib/translations';
 import { Challenge, ProgrammingLanguage } from '@shared/types';
 import { PROGRAMMING_LANGUAGES, CS_CATEGORIES } from '@shared/constants';
 
-function ChallengeItem({
+/* ─── Difficulty label helper ─── */
+function diffStyle(diff: string) {
+  switch (diff.toLowerCase()) {
+    case 'easy':   return 'text-[var(--diff-easy-text)] bg-[var(--diff-easy-bg)]';
+    case 'medium': return 'text-[var(--diff-med-text)]  bg-[var(--diff-med-bg)]';
+    case 'hard':   return 'text-[var(--diff-hard-text)] bg-[var(--diff-hard-bg)]';
+    default:       return 'text-[var(--text-muted)] bg-[var(--bg-subtle)]';
+  }
+}
+
+/* ─── Individual challenge row ─── */
+function ChallengeRow({
   challenge,
   isCompleted,
   isLocked,
@@ -25,90 +36,164 @@ function ChallengeItem({
   onLockedClick: () => void;
 }) {
   const handleClick = (e: React.MouseEvent) => {
-    if (isLocked) {
-      e.preventDefault();
-      onLockedClick();
-    }
-  };
-
-  const getDifficultyBadge = (diff: string) => {
-    switch (diff.toLowerCase()) {
-      case 'easy':
-        return 'bg-emerald-950/50 text-emerald-400 border-emerald-800/80';
-      case 'medium':
-        return 'bg-amber-950/50 text-amber-400 border-amber-800/80';
-      case 'hard':
-        return 'bg-rose-950/50 text-rose-400 border-rose-800/80';
-      default:
-        return 'bg-zinc-800 text-zinc-400 border-zinc-700';
-    }
+    if (isLocked) { e.preventDefault(); onLockedClick(); }
   };
 
   return (
     <Link
       href={`/challenge/${challenge.id}`}
       onClick={handleClick}
-      className={`group relative flex items-center justify-between p-3.5 rounded-lg border transition-all text-left ${
-        isCompleted
-          ? 'bg-blue-950/20 border-blue-800/60 hover:border-blue-700'
-          : isLocked
-          ? 'bg-zinc-900/40 border-zinc-800/60 opacity-75 hover:border-zinc-700'
-          : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/80'
+      className={`group flex items-center gap-4 px-4 py-3 border-b border-[var(--border-subtle)] transition-colors last:border-b-0 ${
+        isLocked
+          ? 'opacity-50 cursor-pointer hover:opacity-60'
+          : isCompleted
+          ? 'bg-[var(--bg-subtle)]'
+          : 'hover:bg-[var(--bg-hover)]'
       }`}
     >
-      <div className="flex items-center gap-3 min-w-0 pr-2">
+      {/* Checkbox / Day number */}
+      <div className="w-9 shrink-0 flex items-center justify-center">
         {isObserver ? (
-          <div className="w-5 h-5 rounded-md bg-zinc-800/90 border border-zinc-700/80 flex items-center justify-center text-[10px] font-mono font-bold text-zinc-400 shrink-0">
-            {challenge.id}
-          </div>
+          <span className="font-mono text-[11px] text-[var(--text-faint)] tabular-nums w-6 text-center">
+            {String(challenge.id).padStart(2, '0')}
+          </span>
         ) : (
           <input
             type="checkbox"
             checked={isCompleted}
-            onChange={(e) => {
-              e.stopPropagation();
-              onToggle();
-            }}
+            disabled={isLocked}
+            onChange={(e) => { e.stopPropagation(); onToggle(); }}
             onClick={(e) => e.stopPropagation()}
-            className="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-blue-600 focus:ring-0 focus:ring-offset-0 cursor-pointer shrink-0"
+            className="w-4 h-4 rounded-sm border border-[var(--border-mid)] bg-[var(--bg-surface)] text-[var(--accent)] accent-[var(--accent)] cursor-pointer shrink-0 focus:ring-0 focus:outline-none"
           />
         )}
-        <div className="min-w-0 flex flex-col">
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider">
-              Day {challenge.id}
-            </span>
-            {challenge.id <= 3 && !isObserver && (
-              <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
-                Free Trial
-              </span>
-            )}
-            {isLocked && (
-              <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-amber-950 text-amber-400 border border-amber-800 flex items-center gap-1">
-                <i className="fa-solid fa-lock text-[9px]"></i> Locked
-              </span>
-            )}
-          </div>
-          <span className="text-sm font-medium text-zinc-200 group-hover:text-white truncate mt-0.5">
-            {challenge.title}
-          </span>
-        </div>
       </div>
 
-      <div className="flex flex-col items-end gap-1 shrink-0">
-        <span
-          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${getDifficultyBadge(
-            challenge.difficulty
-          )}`}
-        >
-          {challenge.difficulty}
-        </span>
-        <span className="text-[11px] text-zinc-400">{challenge.category}</span>
-      </div>
+      {/* Day label (left column) */}
+      <span className="font-mono text-[11px] text-[var(--text-faint)] tabular-nums w-10 shrink-0">
+        Day {challenge.id}
+      </span>
+
+      {/* Title */}
+      <span className={`flex-1 text-sm font-medium truncate transition-colors ${
+        isCompleted
+          ? 'line-through text-[var(--text-muted)]'
+          : 'text-[var(--text-primary)] group-hover:text-[var(--text-primary)]'
+      }`}>
+        {challenge.title}
+      </span>
+
+      {/* Category */}
+      <span className="hidden md:block text-[11px] text-[var(--text-faint)] truncate max-w-[130px] shrink-0">
+        {challenge.category}
+      </span>
+
+      {/* Difficulty */}
+      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded capitalize shrink-0 ${diffStyle(challenge.difficulty)}`}>
+        {challenge.difficulty}
+      </span>
+
+      {/* Lock or free trial marker */}
+      {isLocked && (
+        <span className="text-[10px] text-[var(--text-faint)] shrink-0">Locked</span>
+      )}
+      {challenge.id <= 3 && !isObserver && !isLocked && (
+        <span className="text-[10px] text-[var(--diff-easy-text)] bg-[var(--diff-easy-bg)] px-1.5 py-0.5 rounded shrink-0">Free</span>
+      )}
     </Link>
   );
 }
 
+/* ─── Phase section (no eyebrow pill, just a flat divider line) ─── */
+function PhaseSection({
+  title,
+  range,
+  challenges,
+  progress,
+  isGuest,
+  isObserver,
+  toggleDay,
+  openAuthBarrier,
+}: {
+  title: string;
+  range: string;
+  challenges: Challenge[];
+  progress: { completedDays: number[] };
+  isGuest: boolean;
+  isObserver: boolean;
+  toggleDay: (id: number) => void;
+  openAuthBarrier: (id?: number) => void;
+}) {
+  const completed = challenges.filter(c => progress.completedDays.includes(c.id)).length;
+  const pct = challenges.length > 0 ? Math.round((completed / challenges.length) * 100) : 0;
+
+  return (
+    <section>
+      {/* Phase header — no eyebrow badge */}
+      <div className="flex items-baseline justify-between mb-3">
+        <div>
+          <h2 className="text-base font-semibold text-[var(--text-primary)] tracking-tight">{title}</h2>
+          <span className="text-xs text-[var(--text-faint)]">{range}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="h-1 w-24 rounded-full bg-[var(--bg-subtle)] overflow-hidden">
+            <div
+              className="h-full rounded-full bg-[var(--accent)] transition-all duration-500"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <span className="font-mono text-[11px] text-[var(--text-faint)] tabular-nums">{completed}/{challenges.length}</span>
+        </div>
+      </div>
+
+      {/* Challenge list — clean row layout, NOT a 3-col grid */}
+      <div className="border border-[var(--border-subtle)] rounded-lg overflow-hidden bg-[var(--bg-surface)]">
+        {challenges.map((challenge) => (
+          <ChallengeRow
+            key={challenge.id}
+            challenge={challenge}
+            isCompleted={progress.completedDays.includes(challenge.id)}
+            isLocked={isGuest && challenge.id > 3}
+            isObserver={isObserver}
+            onToggle={() => toggleDay(challenge.id)}
+            onLockedClick={() => openAuthBarrier(challenge.id)}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ─── Skeleton loader ─── */
+function SkeletonRow() {
+  return (
+    <div className="flex items-center gap-4 px-4 py-3 border-b border-[var(--border-subtle)] last:border-b-0 animate-pulse">
+      <div className="w-9 flex items-center justify-center">
+        <div className="w-4 h-4 rounded-sm bg-[var(--bg-subtle)]" />
+      </div>
+      <div className="w-10 h-3 rounded bg-[var(--bg-subtle)]" />
+      <div className="flex-1 h-3 rounded bg-[var(--bg-subtle)]" />
+      <div className="w-20 h-3 rounded bg-[var(--bg-subtle)] hidden md:block" />
+      <div className="w-10 h-5 rounded bg-[var(--bg-subtle)]" />
+    </div>
+  );
+}
+
+function SkeletonPhase({ rows = 8 }: { rows?: number }) {
+  return (
+    <section>
+      <div className="flex items-baseline justify-between mb-3">
+        <div className="w-40 h-4 rounded bg-[var(--bg-subtle)] animate-pulse" />
+        <div className="w-20 h-3 rounded bg-[var(--bg-subtle)] animate-pulse" />
+      </div>
+      <div className="border border-[var(--border-subtle)] rounded-lg overflow-hidden bg-[var(--bg-surface)]">
+        {Array.from({ length: rows }).map((_, i) => <SkeletonRow key={i} />)}
+      </div>
+    </section>
+  );
+}
+
+/* ─── Dashboard ─── */
 export default function DashboardPage() {
   const {
     user,
@@ -132,19 +217,21 @@ export default function DashboardPage() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('ALL');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
-  // Compute allowed categories based on organization
   const allowedCategories = useMemo(() => {
     if (user?.organization?.allowedCategories && user.organization.allowedCategories.length > 0) {
       return user.organization.allowedCategories;
     }
-    return CS_CATEGORIES.map((c) => c.name);
+    return []; // No restriction for guests and regular learners
   }, [user]);
 
-  const t = translations.en;
+  const categoryOptions = useMemo(() => {
+    if (allowedCategories.length > 0) {
+      return allowedCategories;
+    }
+    return CS_CATEGORIES.map((c) => c.name);
+  }, [allowedCategories]);
 
-  useEffect(() => {
-    fetchChallenges();
-  }, []);
+  useEffect(() => { fetchChallenges(); }, []);
 
   const fetchChallenges = async () => {
     try {
@@ -163,362 +250,238 @@ export default function DashboardPage() {
         c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
         String(c.id).includes(searchQuery);
-
-      const matchesDiff =
-        selectedDifficulty === 'ALL' ||
-        c.difficulty.toUpperCase() === selectedDifficulty.toUpperCase();
-
-      const matchesCategory =
-        selectedCategory === 'ALL' || c.category === selectedCategory;
-
-      const matchesOrgCategories =
-        allowedCategories.length === 0 || allowedCategories.includes(c.category);
-
+      const matchesDiff = selectedDifficulty === 'ALL' || c.difficulty.toUpperCase() === selectedDifficulty;
+      const matchesCategory = selectedCategory === 'ALL' || c.category === selectedCategory;
+      const matchesOrgCategories = allowedCategories.length === 0 || allowedCategories.includes(c.category);
       return matchesSearch && matchesDiff && matchesCategory && matchesOrgCategories;
     });
   }, [challenges, searchQuery, selectedDifficulty, selectedCategory, allowedCategories]);
 
-  if (loading || fetching) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-400">
-        <i className="fa-solid fa-circle-notch fa-spin text-2xl text-blue-500"></i>
-      </div>
-    );
-  }
-
-  const phase1 = filteredChallenges.filter((c) => c.id >= 1 && c.id <= 30);
+  const phase1 = filteredChallenges.filter((c) => c.id >= 1  && c.id <= 30);
   const phase2 = filteredChallenges.filter((c) => c.id >= 31 && c.id <= 60);
   const phase3 = filteredChallenges.filter((c) => c.id >= 61 && c.id <= 90);
 
+  const completedCount = progress.completedDays.length;
+  const overallPct = Math.round((completedCount / 90) * 100);
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col">
+    <div className="min-h-[100dvh] bg-[var(--bg-canvas)] text-[var(--text-primary)] flex flex-col">
+      <a href="#main" className="skip-link">Skip to content</a>
       <Header />
 
-      {/* Guest Trial Banner */}
+      {/* ── Context banners ── */}
       {isGuest && (
-        <div className="max-w-7xl w-full mx-auto px-4 sm:px-8 pt-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-lg bg-blue-950/30 border border-blue-800/60 text-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-md bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center shrink-0">
-                <i className="fa-solid fa-unlock-keyhole text-sm"></i>
-              </div>
-              <div>
-                <p className="font-semibold text-white">
-                  Guest Trial Active: Days 1 to 3 are unlocked
-                </p>
-                <p className="text-xs text-zinc-400">
-                  Solve the first 3 challenges in guest mode. Sign up with email verification to sync all 90 days and submit community challenges.
-                </p>
-              </div>
-            </div>
+        <div className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 sm:px-8 py-2.5">
+          <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+            <p className="text-xs text-[var(--text-secondary)]">
+              Guest preview — days 1–3 unlocked. Sign up to save progress and access all 90 days.
+            </p>
             <button
               onClick={() => openAuthBarrier()}
-              className="px-3.5 py-1.5 rounded-md text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-colors whitespace-nowrap"
+              className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-md bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] transition-colors"
             >
-              Sign Up & Cloud Sync
+              Sign up
             </button>
           </div>
         </div>
       )}
 
-      {/* Admin Inspection Banner */}
       {user?.role === 'ADMIN' && (
-        <div className="max-w-7xl w-full mx-auto px-4 sm:px-8 pt-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-lg bg-rose-950/30 border border-rose-800/60 text-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-md bg-rose-600/20 text-rose-400 border border-rose-500/30 flex items-center justify-center shrink-0">
-                <i className="fa-solid fa-shield-halved text-sm"></i>
-              </div>
-              <div>
-                <p className="font-semibold text-white">Admin Curriculum Inspection</p>
-                <p className="text-xs text-zinc-400">
-                  Viewing the 90-day mastery curriculum in moderator inspection mode. You can inspect all problem statements and reference solutions without altering learner progress.
-                </p>
-              </div>
-            </div>
+        <div className="border-b border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/20 px-4 sm:px-8 py-2.5">
+          <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+            <p className="text-xs text-rose-700 dark:text-rose-400">
+              Admin inspection mode — student completion records are read-only.
+            </p>
             <Link
               href="/admin"
-              className="px-3.5 py-1.5 rounded-md text-xs font-semibold text-rose-200 bg-rose-900/60 hover:bg-rose-900 border border-rose-700 transition-colors whitespace-nowrap"
+              className="shrink-0 text-xs font-semibold text-rose-700 dark:text-rose-400 hover:text-rose-900 dark:hover:text-rose-300 transition-colors"
             >
-              Admin Console →
+              Admin console →
             </Link>
           </div>
         </div>
       )}
 
-      {/* Organization Preview Banner */}
       {user?.role === 'ORGANIZATION' && (
-        <div className="max-w-7xl w-full mx-auto px-4 sm:px-8 pt-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-lg bg-purple-950/30 border border-purple-800/60 text-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-md bg-purple-600/20 text-purple-400 border border-purple-500/30 flex items-center justify-center shrink-0">
-                <i className="fa-solid fa-building text-sm"></i>
-              </div>
-              <div>
-                <p className="font-semibold text-white">Organization Curriculum Preview</p>
-                <p className="text-xs text-zinc-400">
-                  Explore all 90 days of challenges assigned to your team members in observer preview mode.
-                </p>
-              </div>
-            </div>
+        <div className="border-b border-[var(--accent-border)] bg-[var(--accent-subtle)] px-4 sm:px-8 py-2.5">
+          <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+            <p className="text-xs text-[var(--accent)] dark:text-indigo-300">
+              Organization preview mode — you are inspecting the curriculum assigned to your team.
+            </p>
             <Link
               href="/organization"
-              className="px-3.5 py-1.5 rounded-md text-xs font-semibold text-purple-200 bg-purple-900/60 hover:bg-purple-900 border border-purple-700 transition-colors whitespace-nowrap"
+              className="shrink-0 text-xs font-semibold text-[var(--accent)] hover:opacity-75 transition-opacity"
             >
-              Team Dashboard →
+              Team dashboard →
             </Link>
           </div>
         </div>
       )}
 
-      {/* Main Container */}
-      <main className="max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 space-y-8 flex-1">
-        {/* Search and Filters Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-zinc-900">
+      {/* ── Main ── */}
+      <main id="main" className="max-w-5xl w-full mx-auto px-4 sm:px-8 py-8 flex-1 space-y-10">
+
+        {/* Page heading + overall progress */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold text-white tracking-tight">
-              90-Day Computer Science Mastery Roadmap
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+              90-day CS mastery
             </h1>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              Systematic curriculum covering Core Algorithms, Data Structures, and System Concepts.
+            <p className="text-sm text-[var(--text-muted)] mt-1 max-w-[55ch]">
+              Daily problems across algorithms, data structures, and system design.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1 sm:w-64">
-              <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500"></i>
-              <input
-                type="text"
-                placeholder="Search challenges or day #..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-md text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+          {/* Overall progress pill */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="h-1.5 w-36 rounded-full bg-[var(--bg-subtle)] overflow-hidden">
+              <div
+                className="h-full rounded-full bg-[var(--accent)] transition-all duration-700"
+                style={{ width: `${overallPct}%` }}
               />
             </div>
-
-            <select
-              value={selectedDifficulty}
-              onChange={(e) => setSelectedDifficulty(e.target.value)}
-              className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 rounded-md text-xs font-medium text-zinc-300 focus:outline-none focus:border-zinc-700 cursor-pointer"
-            >
-              <option value="ALL">All Difficulties</option>
-              <option value="EASY">Easy</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="HARD">Hard</option>
-            </select>
-
-            {/* Category Filter Select */}
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 rounded-md text-xs font-medium text-zinc-300 focus:outline-none focus:border-zinc-700 cursor-pointer max-w-[160px]"
-            >
-              <option value="ALL">All Categories</option>
-              {allowedCategories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+            <span className="font-mono text-xs text-[var(--text-faint)] tabular-nums">
+              {completedCount}/90
+            </span>
           </div>
         </div>
 
-        {/* Programming Language Selector Bar */}
-        <div className="p-3.5 bg-zinc-900/90 border border-zinc-800 rounded-xl space-y-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-zinc-200">Selected Language:</span>
-              <span className="text-xs text-blue-400 font-mono font-semibold uppercase">
-                {selectedLanguage}
-              </span>
+        {/* Language selector — plain button strip, no card wrapper */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-[var(--text-secondary)]">
+              Language
               {user?.organization && (
-                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-950/80 text-purple-300 border border-purple-800 flex items-center gap-1">
-                  <span>🏢</span>
-                  <span>{user.organization.name} Curriculum Policy</span>
+                <span className="ml-2 text-[10px] text-[var(--accent)] font-mono">
+                  {user.organization.name} policy
                 </span>
               )}
-            </div>
-            <span className="text-[11px] text-zinc-500">
-              Code editor &amp; starter solutions adapt to your chosen language
             </span>
+            <span className="text-[11px] text-[var(--text-faint)]">Solutions and workspace update per selection</span>
           </div>
-
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
             {PROGRAMMING_LANGUAGES.map((lang) => {
               const isAllowed = allowedLanguages.includes(lang.id);
               const isActive = selectedLanguage === lang.id;
-
-              if (!isAllowed) {
-                return (
-                  <button
-                    key={lang.id}
-                    disabled
-                    title={`Locked by ${user?.organization?.name || 'organization'} policy`}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-zinc-800/40 bg-zinc-950/40 text-zinc-600 cursor-not-allowed opacity-50 shrink-0"
-                  >
-                    <span>{lang.icon}</span>
-                    <span>{lang.name}</span>
-                    <span className="text-[10px]">🔒</span>
-                  </button>
-                );
-              }
-
               return (
                 <button
                   key={lang.id}
-                  onClick={() => setSelectedLanguage(lang.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all shrink-0 ${
+                  disabled={!isAllowed}
+                  onClick={() => isAllowed && setSelectedLanguage(lang.id)}
+                  className={`px-3 py-1 rounded-md text-[11px] font-mono font-medium whitespace-nowrap transition-colors ${
                     isActive
-                      ? 'bg-blue-600 text-white border-blue-500 shadow-sm shadow-blue-500/20'
-                      : 'bg-zinc-950/80 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:text-white'
+                      ? 'bg-[var(--text-primary)] text-[var(--bg-canvas)]'
+                      : isAllowed
+                      ? 'bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'
+                      : 'opacity-30 cursor-not-allowed bg-[var(--bg-subtle)] text-[var(--text-faint)]'
                   }`}
+                  title={!isAllowed ? 'Restricted by organization curriculum' : ''}
                 >
-                  <span>{lang.icon}</span>
-                  <span>{lang.name}</span>
-                  {isActive && <span className="text-[10px] font-bold">✓</span>}
+                  {lang.name}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Phase 1 */}
-        {phase1.length > 0 && (
-          <section className="space-y-3">
-            <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2">
-              <div className="flex items-center gap-2.5">
-                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-950 text-blue-400 border border-blue-800">
-                  {t.p1Label}
-                </span>
-                <h2 className="text-base font-semibold text-white">{t.p1Title}</h2>
-                <span className="text-xs text-zinc-400 hidden sm:inline">— {t.p1Summary}</span>
-              </div>
-              <span className="text-xs font-mono text-zinc-400">Days 1 - 30</span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
-              {phase1.map((c) => (
-                <ChallengeItem
-                  key={c.id}
-                  challenge={c}
-                  isCompleted={!isObserver && progress.completedDays.includes(c.id)}
-                  isLocked={!isObserver && isGuest && c.id > 3}
-                  isObserver={isObserver}
-                  onToggle={() => toggleDay(c.id)}
-                  onLockedClick={() => openAuthBarrier(c.id)}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Phase 2 */}
-        {phase2.length > 0 && (
-          <section className="space-y-3">
-            <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2">
-              <div className="flex items-center gap-2.5">
-                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-950 text-indigo-400 border border-indigo-800">
-                  {t.p2Label}
-                </span>
-                <h2 className="text-base font-semibold text-white">{t.p2Title}</h2>
-                <span className="text-xs text-zinc-400 hidden sm:inline">— {t.p2Summary}</span>
-              </div>
-              <span className="text-xs font-mono text-zinc-400">Days 31 - 60</span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
-              {phase2.map((c) => (
-                <ChallengeItem
-                  key={c.id}
-                  challenge={c}
-                  isCompleted={!isObserver && progress.completedDays.includes(c.id)}
-                  isLocked={!isObserver && isGuest}
-                  isObserver={isObserver}
-                  onToggle={() => toggleDay(c.id)}
-                  onLockedClick={() => openAuthBarrier(c.id)}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Phase 3 */}
-        {phase3.length > 0 && (
-          <section className="space-y-3">
-            <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2">
-              <div className="flex items-center gap-2.5">
-                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-950 text-purple-400 border border-purple-800">
-                  {t.p3Label}
-                </span>
-                <h2 className="text-base font-semibold text-white">{t.p3Title}</h2>
-                <span className="text-xs text-zinc-400 hidden sm:inline">— {t.p3Summary}</span>
-              </div>
-              <span className="text-xs font-mono text-zinc-400">Days 61 - 90</span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
-              {phase3.map((c) => (
-                <ChallengeItem
-                  key={c.id}
-                  challenge={c}
-                  isCompleted={!isObserver && progress.completedDays.includes(c.id)}
-                  isLocked={!isObserver && isGuest}
-                  isObserver={isObserver}
-                  onToggle={() => toggleDay(c.id)}
-                  onLockedClick={() => openAuthBarrier(c.id)}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {filteredChallenges.length === 0 && (
-          <div className="p-12 text-center rounded-lg bg-zinc-900 border border-zinc-800">
-            <i className="fa-solid fa-code text-2xl text-zinc-600 mb-2"></i>
-            {challenges.length === 0 ? (
-              <>
-                <p className="text-sm font-medium text-zinc-300">No challenges in the database yet.</p>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Submit a new challenge to populate the roadmap or log in as Admin (<span className="text-zinc-400 font-mono">admin@example.com</span>) to manage curriculum.
-                </p>
-                <div className="mt-4 flex items-center justify-center gap-3">
-                  <Link
-                    href="/challenges/create"
-                    className="px-3.5 py-1.5 rounded-md text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-colors"
-                  >
-                    Submit First Challenge
-                  </Link>
-                  <Link
-                    href="/login"
-                    className="px-3.5 py-1.5 rounded-md text-xs font-semibold text-zinc-300 bg-zinc-800 hover:bg-zinc-700 transition-colors"
-                  >
-                    Admin Login
-                  </Link>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="text-sm font-medium text-zinc-400">No challenges match your search criteria.</p>
-                <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSelectedDifficulty('ALL');
-                  }}
-                  className="mt-3 px-3 py-1.5 text-xs font-medium text-blue-400 hover:text-blue-300"
-                >
-                  Reset Filters
-                </button>
-              </>
-            )}
+        {/* Filters — inline, minimal */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-[var(--text-faint)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+            </svg>
+            <input
+              type="text"
+              placeholder="Search by title, category, or day number"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-7 pr-3 py-1.5 text-xs rounded-md border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-primary)] placeholder-[var(--text-faint)] focus:outline-none focus:border-[var(--accent)] w-60 transition-colors"
+            />
           </div>
+
+          <select
+            value={selectedDifficulty}
+            onChange={(e) => setSelectedDifficulty(e.target.value)}
+            className="px-2.5 py-1.5 text-xs rounded-md border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent)] cursor-pointer transition-colors"
+          >
+            <option value="ALL">All difficulties</option>
+            <option value="EASY">Easy</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HARD">Hard</option>
+          </select>
+
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-2.5 py-1.5 text-xs rounded-md border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent)] cursor-pointer max-w-[180px] transition-colors"
+          >
+            <option value="ALL">All categories</option>
+            {categoryOptions.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* ── Challenge phases ── */}
+        {loading || fetching ? (
+          <>
+            <SkeletonPhase rows={10} />
+            <SkeletonPhase rows={10} />
+            <SkeletonPhase rows={10} />
+          </>
+        ) : (
+          <>
+            {phase1.length > 0 && (
+              <PhaseSection
+                title="Foundations & algorithmic thinking"
+                range="Days 1–30"
+                challenges={phase1}
+                progress={progress}
+                isGuest={isGuest}
+                isObserver={isObserver}
+                toggleDay={toggleDay}
+                openAuthBarrier={openAuthBarrier}
+              />
+            )}
+            {phase2.length > 0 && (
+              <PhaseSection
+                title="Advanced data structures & traversal"
+                range="Days 31–60"
+                challenges={phase2}
+                progress={progress}
+                isGuest={isGuest}
+                isObserver={isObserver}
+                toggleDay={toggleDay}
+                openAuthBarrier={openAuthBarrier}
+              />
+            )}
+            {phase3.length > 0 && (
+              <PhaseSection
+                title="Dynamic programming & system design"
+                range="Days 61–90"
+                challenges={phase3}
+                progress={progress}
+                isGuest={isGuest}
+                isObserver={isObserver}
+                toggleDay={toggleDay}
+                openAuthBarrier={openAuthBarrier}
+              />
+            )}
+
+            {filteredChallenges.length === 0 && (
+              <div className="py-16 text-center">
+                <p className="text-sm font-medium text-[var(--text-secondary)]">No challenges match your filters</p>
+                <p className="text-xs text-[var(--text-faint)] mt-1">Try adjusting the keyword, difficulty, or category.</p>
+              </div>
+            )}
+          </>
         )}
       </main>
 
-      {/* Auth Barrier Modal */}
       <AuthBarrierModal
         isOpen={authBarrier.isOpen}
-        dayId={authBarrier.dayId}
         onClose={closeAuthBarrier}
+        dayId={authBarrier.dayId}
       />
     </div>
   );

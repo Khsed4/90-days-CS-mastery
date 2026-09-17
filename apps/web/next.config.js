@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',   // enables lean Docker runtime (no node_modules at run time)
   reactStrictMode: true,
   transpilePackages: [
     '@shared/contracts',

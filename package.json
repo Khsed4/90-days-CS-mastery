@@ -16,6 +16,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.3.0",
     "@nestjs/swagger": "^7.3.0",
+    "@phosphor-icons/react": "^2.1.10",
     "@prisma/client": "^5.22.0",
     "@trpc/client": "^10.45.4",
     "@trpc/server": "^10.45.4",

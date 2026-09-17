@@ -79,8 +79,8 @@ export default function AdminPage() {
 
   if (loading || (!user && fetching)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-400">
-        <i className="fa-solid fa-circle-notch fa-spin text-2xl text-rose-500"></i>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-canvas)] text-zinc-500 font-mono text-xs">
+        <div className="w-6 h-6 border-2 border-zinc-900 dark:border-zinc-100 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -110,48 +110,48 @@ export default function AdminPage() {
   const getDifficultyBadge = (diff: string) => {
     switch (diff.toLowerCase()) {
       case 'easy':
-        return 'bg-emerald-950/60 text-emerald-400 border-emerald-800';
+        return 'bg-[var(--badge-easy-bg)] text-[var(--badge-easy-text)] border-[var(--badge-easy-border)]';
       case 'medium':
-        return 'bg-amber-950/60 text-amber-400 border-amber-800';
+        return 'bg-[var(--badge-medium-bg)] text-[var(--badge-medium-text)] border-[var(--badge-medium-border)]';
       case 'hard':
-        return 'bg-rose-950/60 text-rose-400 border-rose-800';
+        return 'bg-[var(--badge-hard-bg)] text-[var(--badge-hard-text)] border-[var(--badge-hard-border)]';
       default:
-        return 'bg-zinc-800 text-zinc-300 border-zinc-700';
+        return 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700';
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'APPROVED':
-        return 'bg-emerald-950 text-emerald-400 border-emerald-800';
+        return 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
       case 'ORG_APPROVED':
-        return 'bg-purple-950 text-purple-300 border-purple-800';
+        return 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800';
       case 'PENDING_ORG':
-        return 'bg-amber-950 text-amber-400 border-amber-800';
+        return 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800';
       case 'PENDING':
-        return 'bg-amber-950 text-amber-400 border-amber-800';
+        return 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800';
       case 'REJECTED':
-        return 'bg-rose-950 text-rose-400 border-rose-800';
+        return 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800';
       default:
-        return 'bg-zinc-800 text-zinc-300 border-zinc-700';
+        return 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700';
     }
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col">
+    <div className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-primary)] flex flex-col transition-colors">
       <Header customTitle="Admin Console" />
 
       <main className="max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 space-y-6 flex-1">
         {/* Header Title & New Action */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-zinc-900">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200 dark:border-zinc-800">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-950 text-rose-400 border border-rose-800">
+              <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700">
                 ADMIN CONSOLE
               </span>
-              <h1 className="text-xl font-bold text-white tracking-tight">System & Curriculum Control</h1>
+              <h1 className="font-display text-xl font-bold text-zinc-900 dark:text-white tracking-tight">System &amp; Curriculum Control</h1>
             </div>
-            <p className="text-xs text-zinc-400 mt-1">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
               Manage challenges, review community submissions, monitor platform metrics, and oversee users and organizations.
             </p>
           </div>
@@ -161,42 +161,45 @@ export default function AdminPage() {
               setEditChallenge(null);
               setShowEditModal(true);
             }}
-            className="px-4 py-2 rounded-md text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-colors shrink-0 shadow-sm"
+            className="px-3.5 py-1.5 rounded-md text-xs font-semibold text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90 active:scale-98 transition-all shrink-0 shadow-xs flex items-center gap-1.5"
           >
-            <i className="fa-solid fa-plus mr-1.5"></i> Add Challenge
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Add Challenge</span>
           </button>
         </div>
 
         {/* Stats Grid */}
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-            <div className="p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg">
-              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Learners</span>
-              <p className="text-xl font-bold text-white mt-1">{stats.totalUsers}</p>
+            <div className="p-3.5 bg-white dark:bg-[#14161b] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-2xs">
+              <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Learners</span>
+              <p className="font-display text-xl font-bold text-zinc-900 dark:text-white mt-1 tabular-nums">{stats.totalUsers}</p>
             </div>
-            <div className="p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg">
-              <span className="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Organizations</span>
-              <p className="text-xl font-bold text-purple-300 mt-1">{stats.totalOrganizations ?? 0}</p>
+            <div className="p-3.5 bg-white dark:bg-[#14161b] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-2xs">
+              <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Organizations</span>
+              <p className="font-display text-xl font-bold text-zinc-900 dark:text-white mt-1 tabular-nums">{stats.totalOrganizations ?? 0}</p>
             </div>
-            <div className="p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg">
-              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Challenges</span>
-              <p className="text-xl font-bold text-white mt-1">{stats.totalChallenges}</p>
+            <div className="p-3.5 bg-white dark:bg-[#14161b] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-2xs">
+              <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Challenges</span>
+              <p className="font-display text-xl font-bold text-zinc-900 dark:text-white mt-1 tabular-nums">{stats.totalChallenges}</p>
             </div>
-            <div className="p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg">
-              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Core 90-Day</span>
-              <p className="text-xl font-bold text-blue-400 mt-1">{stats.coreChallenges}</p>
+            <div className="p-3.5 bg-white dark:bg-[#14161b] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-2xs">
+              <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Core 90-Day</span>
+              <p className="font-display text-xl font-bold text-zinc-900 dark:text-white mt-1 tabular-nums">{stats.coreChallenges}</p>
             </div>
-            <div className="p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg">
-              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Bonus</span>
-              <p className="text-xl font-bold text-emerald-400 mt-1">{stats.bonusChallenges}</p>
+            <div className="p-3.5 bg-white dark:bg-[#14161b] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-2xs">
+              <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Bonus</span>
+              <p className="font-display text-xl font-bold text-zinc-900 dark:text-white mt-1 tabular-nums">{stats.bonusChallenges}</p>
             </div>
-            <div className="p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg">
-              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Pending</span>
-              <p className="text-xl font-bold text-amber-400 mt-1">{stats.pendingChallenges}</p>
+            <div className="p-3.5 bg-white dark:bg-[#14161b] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-2xs">
+              <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Pending</span>
+              <p className="font-display text-xl font-bold text-amber-600 dark:text-amber-400 mt-1 tabular-nums">{stats.pendingChallenges}</p>
             </div>
-            <div className="p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg">
-              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Completions</span>
-              <p className="text-xl font-bold text-indigo-400 mt-1">{stats.totalCompletions}</p>
+            <div className="p-3.5 bg-white dark:bg-[#14161b] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-2xs">
+              <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Completions</span>
+              <p className="font-display text-xl font-bold text-zinc-900 dark:text-white mt-1 tabular-nums">{stats.totalCompletions}</p>
             </div>
           </div>
         )}
@@ -204,18 +207,18 @@ export default function AdminPage() {
         {/* Filters & Tabs */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
           {/* Tabs */}
-          <div className="flex flex-wrap items-center gap-1 bg-zinc-900 p-1 rounded-md border border-zinc-800">
+          <div className="flex flex-wrap items-center gap-1 bg-zinc-100 dark:bg-[#14161b] p-1 rounded-lg border border-zinc-200 dark:border-zinc-800">
             <button
               onClick={() => setActiveTab('PENDING')}
-              className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 activeTab === 'PENDING'
-                  ? 'bg-zinc-800 text-white shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-zinc-700/60 shadow-xs'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
               <span>Pending Review</span>
               {pendingCount > 0 && (
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800 tabular-nums">
                   {pendingCount}
                 </span>
               )}
@@ -223,10 +226,10 @@ export default function AdminPage() {
 
             <button
               onClick={() => setActiveTab('CORE')}
-              className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 activeTab === 'CORE'
-                  ? 'bg-zinc-800 text-white shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-zinc-700/60 shadow-xs'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
               Core (90 Days)
@@ -234,10 +237,10 @@ export default function AdminPage() {
 
             <button
               onClick={() => setActiveTab('BONUS')}
-              className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 activeTab === 'BONUS'
-                  ? 'bg-zinc-800 text-white shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-zinc-700/60 shadow-xs'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
               Bonus
@@ -245,10 +248,10 @@ export default function AdminPage() {
 
             <button
               onClick={() => setActiveTab('ALL')}
-              className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 activeTab === 'ALL'
-                  ? 'bg-zinc-800 text-white shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-zinc-700/60 shadow-xs'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
               All Challenges
@@ -256,26 +259,31 @@ export default function AdminPage() {
 
             <button
               onClick={() => setActiveTab('USERS')}
-              className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 activeTab === 'USERS'
-                  ? 'bg-purple-900/60 text-purple-200 border border-purple-700 shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-zinc-700/60 shadow-xs'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
-              <span>👥 Users & Orgs</span>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <span>Users &amp; Orgs</span>
             </button>
           </div>
 
           {/* Search (only for challenge tables) */}
           {activeTab !== 'USERS' && (
             <div className="relative w-full sm:w-64">
-              <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500"></i>
+              <svg className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
               <input
                 type="text"
                 placeholder="Search challenges..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-md text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+                className="w-full pl-8 pr-3 py-1.5 bg-white dark:bg-[#0c0d10] border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
               />
             </div>
           )}
@@ -285,10 +293,10 @@ export default function AdminPage() {
         {activeTab === 'USERS' ? (
           <UserManagementTable />
         ) : (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
+          <div className="bg-white dark:bg-[#14161b] border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-950 border-b border-zinc-800 text-zinc-400 font-semibold uppercase tracking-wider">
+                <thead className="bg-zinc-50 dark:bg-[#0c0d10] border-b border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 font-semibold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-4 py-3">#</th>
                     <th className="px-4 py-3">Title</th>
@@ -300,13 +308,13 @@ export default function AdminPage() {
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800/60">
+                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/70">
                   {filteredChallenges.length > 0 ? (
                     filteredChallenges.map((c) => (
-                      <tr key={c.id} className="hover:bg-zinc-800/40 transition-colors">
-                        <td className="px-4 py-3 font-mono font-medium text-zinc-400">{c.id}</td>
-                        <td className="px-4 py-3 font-medium text-white max-w-xs truncate">{c.title}</td>
-                        <td className="px-4 py-3 text-zinc-400">{c.category}</td>
+                      <tr key={c.id} className="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/40 transition-colors">
+                        <td className="px-4 py-3 font-mono text-zinc-500 dark:text-zinc-400 tabular-nums">{c.id}</td>
+                        <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white max-w-xs truncate">{c.title}</td>
+                        <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">{c.category}</td>
                         <td className="px-4 py-3">
                           <span
                             className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded border ${getDifficultyBadge(
@@ -320,8 +328,8 @@ export default function AdminPage() {
                           <span
                             className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
                               c.type === 'CORE'
-                                ? 'bg-blue-950 text-blue-400'
-                                : 'bg-purple-950 text-purple-400'
+                                ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                                : 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800'
                             }`}
                           >
                             {c.type}
@@ -336,14 +344,14 @@ export default function AdminPage() {
                             {c.status}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-zinc-400">
+                        <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                           {c.authorName ? `@${c.authorName}` : 'Curriculum'}
                         </td>
                         <td className="px-4 py-3 text-right space-x-1.5 whitespace-nowrap">
                           {c.status === 'PENDING' || c.status === 'ORG_APPROVED' ? (
                             <button
                               onClick={() => setReviewChallenge(c)}
-                              className="px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-semibold text-[11px] transition-colors"
+                              className="px-2.5 py-1 rounded-md bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-semibold text-[11px] hover:opacity-90 transition-all shadow-xs"
                             >
                               Review &amp; Publish
                             </button>
@@ -353,7 +361,7 @@ export default function AdminPage() {
                                 setEditChallenge(c);
                                 setShowEditModal(true);
                               }}
-                              className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white font-medium text-[11px] transition-colors"
+                              className="px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-medium text-[11px] transition-colors"
                             >
                               Edit
                             </button>
@@ -361,7 +369,7 @@ export default function AdminPage() {
 
                           <button
                             onClick={() => handleDelete(c.id)}
-                            className="px-2.5 py-1 rounded bg-rose-950/60 hover:bg-rose-900/80 text-rose-400 font-medium text-[11px] border border-rose-800/80 transition-colors"
+                            className="px-2.5 py-1 rounded-md text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-[11px] transition-colors"
                           >
                             Delete
                           </button>
@@ -370,7 +378,7 @@ export default function AdminPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={8} className="px-4 py-8 text-center text-zinc-500">
+                      <td colSpan={8} className="px-4 py-8 text-center text-zinc-400 dark:text-zinc-500 font-mono">
                         No challenges found in this view.
                       </td>
                     </tr>

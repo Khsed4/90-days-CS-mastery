@@ -67,7 +67,11 @@ export default function OrganizationDashboardPage() {
   }, [token, user, loadData]);
 
   const handleRemoveMember = async (member: OrganizationMember) => {
-    if (!confirm(`Are you sure you want to remove ${member.name} (${member.email}) from your organization? Their personal challenge progress will remain preserved.`)) {
+    if (
+      !confirm(
+        `Are you sure you want to remove ${member.name} (${member.email}) from your organization? Their personal challenge progress will remain preserved.`
+      )
+    ) {
       return;
     }
 
@@ -81,12 +85,12 @@ export default function OrganizationDashboardPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
+      <div className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-primary)] flex flex-col">
         <Header />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-3">
-            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-xs text-zinc-400">Loading Organization Portal...</p>
+            <div className="w-6 h-6 border-2 border-zinc-900 dark:border-zinc-100 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">Loading Organization Portal...</p>
           </div>
         </div>
       </div>
@@ -99,12 +103,12 @@ export default function OrganizationDashboardPage() {
 
   if (loading && !orgStats) {
     return (
-      <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
+      <div className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-primary)] flex flex-col">
         <Header />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-3">
-            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-xs text-zinc-400">Loading Organization Details...</p>
+            <div className="w-6 h-6 border-2 border-zinc-900 dark:border-zinc-100 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">Loading Organization Details...</p>
           </div>
         </div>
       </div>
@@ -112,49 +116,53 @@ export default function OrganizationDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
+    <div className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-primary)] flex flex-col transition-colors">
       <Header />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {orgStats && (
-          <OrgStatsBanner stats={orgStats} orgName={orgName} />
-        )}
+        {orgStats && <OrgStatsBanner stats={orgStats} orgName={orgName} />}
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 border-b border-zinc-800 pb-1">
+        <div className="flex items-center gap-1 bg-zinc-100 dark:bg-[#14161b] p-1 rounded-lg border border-zinc-200 dark:border-zinc-800 w-fit">
           <button
             onClick={() => setActiveTab('members')}
-            className={`flex items-center gap-2 py-2 px-4 rounded-lg text-xs font-semibold transition-all ${
+            className={`flex items-center gap-2 py-1.5 px-3.5 rounded-md text-xs font-semibold transition-all ${
               activeTab === 'members'
-                ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-zinc-700/60 shadow-xs'
+                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
-            <span>👥</span>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
             <span>Team Members &amp; Invites</span>
           </button>
 
           <button
             onClick={() => setActiveTab('challenges')}
-            className={`flex items-center gap-2 py-2 px-4 rounded-lg text-xs font-semibold transition-all ${
+            className={`flex items-center gap-2 py-1.5 px-3.5 rounded-md text-xs font-semibold transition-all ${
               activeTab === 'challenges'
-                ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-zinc-700/60 shadow-xs'
+                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
-            <span>🎯</span>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
             <span>Team Challenges Moderation</span>
           </button>
 
           <button
             onClick={() => setActiveTab('curriculum')}
-            className={`flex items-center gap-2 py-2 px-4 rounded-lg text-xs font-semibold transition-all ${
+            className={`flex items-center gap-2 py-1.5 px-3.5 rounded-md text-xs font-semibold transition-all ${
               activeTab === 'curriculum'
-                ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-zinc-700/60 shadow-xs'
+                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
-            <span>⚙️</span>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
             <span>Curriculum &amp; Languages</span>
           </button>
         </div>
@@ -174,19 +182,12 @@ export default function OrganizationDashboardPage() {
           </>
         )}
 
-        {activeTab === 'challenges' && (
-          <OrgChallengesModeration />
-        )}
+        {activeTab === 'challenges' && <OrgChallengesModeration />}
 
-        {activeTab === 'curriculum' && (
-          <OrgCurriculumSettings />
-        )}
+        {activeTab === 'curriculum' && <OrgCurriculumSettings />}
       </main>
 
-      <MemberProgressModal
-        member={selectedMember}
-        onClose={() => setSelectedMember(null)}
-      />
+      <MemberProgressModal member={selectedMember} onClose={() => setSelectedMember(null)} />
     </div>
   );
 }

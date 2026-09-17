@@ -96,7 +96,7 @@ export const ChallengeEditModal: React.FC<ChallengeEditModalProps> = ({
         {/* Row 1 */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
           <div className="md:col-span-6 space-y-1">
-            <label className="block text-xs font-semibold text-zinc-300">
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               Challenge Title *
             </label>
             <input
@@ -105,18 +105,18 @@ export const ChallengeEditModal: React.FC<ChallengeEditModalProps> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Inverted Binary Tree"
-              className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-md text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+              className="w-full px-3 py-1.5 bg-white dark:bg-[#0c0d10] border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
             />
           </div>
 
           <div className="md:col-span-3 space-y-1">
-            <label className="block text-xs font-semibold text-zinc-300">
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               Difficulty
             </label>
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value as DifficultyLevel)}
-              className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-md text-xs font-medium text-zinc-200 focus:outline-none focus:border-zinc-700 cursor-pointer"
+              className="w-full px-3 py-1.5 bg-white dark:bg-[#0c0d10] border border-zinc-200 dark:border-zinc-800 rounded-md text-xs font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 cursor-pointer"
             >
               <option value="Easy">Easy</option>
               <option value="Medium">Medium</option>
@@ -125,13 +125,13 @@ export const ChallengeEditModal: React.FC<ChallengeEditModalProps> = ({
           </div>
 
           <div className="md:col-span-3 space-y-1">
-            <label className="block text-xs font-semibold text-zinc-300">
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               Type
             </label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as ChallengeType)}
-              className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-md text-xs font-medium text-zinc-200 focus:outline-none focus:border-zinc-700 cursor-pointer"
+              className="w-full px-3 py-1.5 bg-white dark:bg-[#0c0d10] border border-zinc-200 dark:border-zinc-800 rounded-md text-xs font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 cursor-pointer"
             >
               <option value="CORE">CORE (90 Days)</option>
               <option value="BONUS">BONUS</option>
@@ -142,7 +142,7 @@ export const ChallengeEditModal: React.FC<ChallengeEditModalProps> = ({
         {/* Row 2 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="block text-xs font-semibold text-zinc-300">
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               Category
             </label>
             <input
@@ -151,18 +151,18 @@ export const ChallengeEditModal: React.FC<ChallengeEditModalProps> = ({
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               placeholder="e.g. Dynamic Programming"
-              className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-md text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+              className="w-full px-3 py-1.5 bg-white dark:bg-[#0c0d10] border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="block text-xs font-semibold text-zinc-300">
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               Status
             </label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as ChallengeStatus)}
-              className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-md text-xs font-medium text-zinc-200 focus:outline-none focus:border-zinc-700 cursor-pointer"
+              className="w-full px-3 py-1.5 bg-white dark:bg-[#0c0d10] border border-zinc-200 dark:border-zinc-800 rounded-md text-xs font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 cursor-pointer"
             >
               <option value="APPROVED">APPROVED (Published)</option>
               <option value="PENDING">PENDING (In Review)</option>
@@ -173,21 +173,21 @@ export const ChallengeEditModal: React.FC<ChallengeEditModalProps> = ({
 
         {/* Prerequisite */}
         <div className="space-y-1">
-          <label className="block text-xs font-semibold text-zinc-300">
-            Prerequisites & Theory
+          <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            Prerequisites &amp; Theory
           </label>
           <textarea
             required
             rows={2}
             value={prerequisite}
             onChange={(e) => setPrerequisite(e.target.value)}
-            className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-md text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+            className="w-full px-3 py-1.5 bg-white dark:bg-[#0c0d10] border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
           />
         </div>
 
         {/* Description */}
         <div className="space-y-1">
-          <label className="block text-xs font-semibold text-zinc-300">
+          <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
             Problem Description
           </label>
           <textarea
@@ -195,14 +195,14 @@ export const ChallengeEditModal: React.FC<ChallengeEditModalProps> = ({
             rows={2}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-md text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+            className="w-full px-3 py-1.5 bg-white dark:bg-[#0c0d10] border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
           />
         </div>
 
         {/* Examples & Constraints */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="block text-xs font-semibold text-zinc-300">
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               Examples
             </label>
             <textarea
@@ -210,12 +210,12 @@ export const ChallengeEditModal: React.FC<ChallengeEditModalProps> = ({
               rows={3}
               value={examples}
               onChange={(e) => setExamples(e.target.value)}
-              className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-md text-xs font-mono text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+              className="w-full px-3 py-1.5 bg-white dark:bg-[#0c0d10] border border-zinc-200 dark:border-zinc-800 rounded-md text-xs font-mono text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="block text-xs font-semibold text-zinc-300">
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               Constraints
             </label>
             <textarea
@@ -223,7 +223,7 @@ export const ChallengeEditModal: React.FC<ChallengeEditModalProps> = ({
               rows={3}
               value={constraints}
               onChange={(e) => setConstraints(e.target.value)}
-              className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-md text-xs font-mono text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+              className="w-full px-3 py-1.5 bg-white dark:bg-[#0c0d10] border border-zinc-200 dark:border-zinc-800 rounded-md text-xs font-mono text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
             />
           </div>
         </div>
@@ -231,7 +231,7 @@ export const ChallengeEditModal: React.FC<ChallengeEditModalProps> = ({
         {/* Solutions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="block text-xs font-semibold text-zinc-300">
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               Java Solution Code
             </label>
             <textarea
@@ -239,12 +239,12 @@ export const ChallengeEditModal: React.FC<ChallengeEditModalProps> = ({
               rows={4}
               value={java}
               onChange={(e) => setJava(e.target.value)}
-              className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-md text-xs font-mono text-blue-300 placeholder-zinc-600 focus:outline-none focus:border-zinc-700"
+              className="w-full px-3 py-1.5 bg-[#0c0d10] border border-zinc-800 rounded-md text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-600"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="block text-xs font-semibold text-zinc-300">
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               TypeScript Solution Code
             </label>
             <textarea
@@ -252,24 +252,24 @@ export const ChallengeEditModal: React.FC<ChallengeEditModalProps> = ({
               rows={4}
               value={ts}
               onChange={(e) => setTs(e.target.value)}
-              className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-md text-xs font-mono text-blue-300 placeholder-zinc-600 focus:outline-none focus:border-zinc-700"
+              className="w-full px-3 py-1.5 bg-[#0c0d10] border border-zinc-800 rounded-md text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-600"
             />
           </div>
         </div>
 
         {/* Actions */}
-        <div className="pt-3 border-t border-zinc-800 flex items-center justify-end gap-2">
+        <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors"
+            className="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="px-4 py-1.5 rounded-md text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-colors shadow-sm disabled:opacity-50"
+            className="px-4 py-1.5 rounded-md text-xs font-semibold text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90 active:scale-98 transition-all shadow-xs disabled:opacity-50"
           >
             {saving ? 'Saving...' : isEditing ? 'Update' : 'Create'}
           </button>

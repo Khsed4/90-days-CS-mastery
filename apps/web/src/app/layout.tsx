@@ -1,26 +1,29 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/features/auth';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: '90-Day CS Mastery Roadmap',
-  description: 'Learn core computer science concepts, algorithms, and system design in 90 days.',
+  title: '90-Day CS Mastery',
+  description:
+    'A structured 90-day curriculum covering algorithms, data structures, and system design. One problem a day, six programming languages.',
+  keywords: ['computer science', 'algorithms', 'data structures', 'system design', 'coding challenges'],
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning className="dark">
       <head>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        {/* Geist font — preconnect for performance */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className="bg-zinc-950 text-zinc-100 min-h-screen">
-        <AuthProvider>{children}</AuthProvider>
+      <body className="min-h-[100dvh] bg-[var(--bg-canvas)] text-[var(--text-primary)] antialiased selection:bg-[var(--text-primary)] selection:text-[var(--bg-canvas)]">
+        <ThemeProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

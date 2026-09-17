@@ -79,30 +79,31 @@ export const AuthBarrierModal: React.FC<AuthBarrierModalProps> = ({
         <div className="space-y-4">
           {/* Header */}
           <div className="text-center space-y-1.5">
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-950 text-blue-400 border border-blue-800">
-              <span>🚀</span> Guest Trial
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+              <span>Free Tier Limit</span>
             </div>
 
-            <h3 className="text-base font-bold text-white tracking-tight">
+            <h3 className="font-display text-base font-bold text-zinc-900 dark:text-white tracking-tight">
               {dayId ? `Unlock Day ${dayId} & Sync Progress` : 'Save Your Progress in Cloud'}
             </h3>
-            <p className="text-xs text-zinc-400 leading-relaxed">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
               Create an account or sign in to continue past the 3 free trial challenges and keep your progress synced.
             </p>
           </div>
 
           {/* Tab Switcher */}
-          <div className="flex bg-zinc-950 p-1 rounded-md border border-zinc-800">
+          <div className="flex bg-zinc-100 dark:bg-[#0c0d10] p-1 rounded-lg border border-zinc-200 dark:border-zinc-800">
             <button
               type="button"
               onClick={() => {
                 setTab('register');
                 setError('');
               }}
-              className={`flex-1 py-1.5 rounded text-xs font-semibold transition-colors ${
+              className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 tab === 'register'
-                  ? 'bg-zinc-800 text-white shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-zinc-700/60 shadow-xs'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
               Sign Up
@@ -113,10 +114,10 @@ export const AuthBarrierModal: React.FC<AuthBarrierModalProps> = ({
                 setTab('login');
                 setError('');
               }}
-              className={`flex-1 py-1.5 rounded text-xs font-semibold transition-colors ${
+              className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 tab === 'login'
-                  ? 'bg-zinc-800 text-white shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-zinc-700/60 shadow-xs'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
               Sign In
@@ -124,7 +125,7 @@ export const AuthBarrierModal: React.FC<AuthBarrierModalProps> = ({
           </div>
 
           {error && (
-            <div className="p-2.5 bg-rose-950/50 border border-rose-800 rounded text-xs text-rose-300 text-center">
+            <div className="p-2.5 bg-[var(--badge-hard-bg)] border border-[var(--badge-hard-border)] rounded-md text-xs text-[var(--badge-hard-text)] text-center font-medium">
               {error}
             </div>
           )}
@@ -132,7 +133,7 @@ export const AuthBarrierModal: React.FC<AuthBarrierModalProps> = ({
           <form onSubmit={handleSubmit} className="space-y-3">
             {tab === 'register' && (
               <div className="space-y-1">
-                <label className="block text-xs font-semibold text-zinc-300">
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                   Full Name
                 </label>
                 <input
@@ -141,13 +142,13 @@ export const AuthBarrierModal: React.FC<AuthBarrierModalProps> = ({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Alex Doe"
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-md text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+                  className="w-full px-3 py-2 bg-white dark:bg-[#0c0d10] border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                 />
               </div>
             )}
 
             <div className="space-y-1">
-              <label className="block text-xs font-semibold text-zinc-300">
+              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                 Email Address
               </label>
               <input
@@ -156,12 +157,12 @@ export const AuthBarrierModal: React.FC<AuthBarrierModalProps> = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="developer@example.com"
-                className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-md text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+                className="w-full px-3 py-2 bg-white dark:bg-[#0c0d10] border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-semibold text-zinc-300">
+              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                 Password
               </label>
               <input
@@ -170,14 +171,14 @@ export const AuthBarrierModal: React.FC<AuthBarrierModalProps> = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-md text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+                className="w-full px-3 py-2 bg-white dark:bg-[#0c0d10] border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 px-4 rounded-md text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-colors shadow-sm disabled:opacity-50 mt-2"
+              className="w-full py-2 px-4 rounded-md text-xs font-semibold text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90 active:scale-98 transition-all disabled:opacity-50 mt-2 shadow-sm"
             >
               {loading
                 ? 'Processing...'

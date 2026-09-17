@@ -155,6 +155,12 @@ export const CS_CATEGORIES: CategoryMeta[] = [
     description: 'Dual traversal & sliding window patterns',
   },
   {
+    id: 'sliding-window',
+    name: 'Sliding Window',
+    icon: '🪟',
+    description: 'Subarray and substring sliding window patterns',
+  },
+  {
     id: 'stack',
     name: 'Stack',
     icon: '📚',
@@ -203,10 +209,28 @@ export const CS_CATEGORIES: CategoryMeta[] = [
     description: 'DFS, BFS, topological sort, union-find',
   },
   {
+    id: 'advanced-graphs',
+    name: 'Advanced Graphs',
+    icon: '🗺️',
+    description: 'Dijkstra, Bellman-Ford, Kruskal, network flow',
+  },
+  {
     id: 'dynamic-programming',
     name: 'Dynamic Programming',
     icon: '📊',
     description: 'Memoization, tabulation, optimal substructure',
+  },
+  {
+    id: '1d-dynamic-programming',
+    name: '1-D Dynamic Programming',
+    icon: '📈',
+    description: 'Single-dimension recurrence, climbing stairs, house robber',
+  },
+  {
+    id: '2d-dynamic-programming',
+    name: '2-D Dynamic Programming',
+    icon: '📉',
+    description: 'Multi-dimensional recurrence, grid paths, edit distance',
   },
   {
     id: 'bit-manipulation',

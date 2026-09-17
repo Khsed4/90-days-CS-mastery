@@ -92,15 +92,15 @@ export function OrgCurriculumSettings() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-xs text-zinc-500">Loading curriculum settings...</div>;
+    return <div className="p-8 text-center text-xs text-zinc-500 font-mono animate-pulse">Loading curriculum settings...</div>;
   }
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm space-y-6">
+    <div className="bg-white dark:bg-[#14161b] border border-zinc-200 dark:border-zinc-800 rounded-lg p-6 shadow-xs space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-base font-bold text-white tracking-tight">Curriculum &amp; Language Restrictions</h2>
-          <p className="text-xs text-zinc-400 mt-0.5">
+          <h2 className="font-display text-base font-bold text-zinc-900 dark:text-white tracking-tight">Curriculum &amp; Language Restrictions</h2>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
             Configure the specific programming languages and CS topics permitted for your team members. Learners under your organization will be restricted strictly to these options.
           </p>
         </div>
@@ -108,42 +108,42 @@ export function OrgCurriculumSettings() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="py-2 px-5 rounded-lg text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 transition-colors shadow-md shadow-purple-600/20 disabled:opacity-50 flex items-center justify-center gap-2 self-start sm:self-auto"
+          className="py-2 px-5 rounded-md text-xs font-semibold text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90 active:scale-98 transition-all disabled:opacity-50 flex items-center justify-center gap-2 self-start sm:self-auto shadow-xs"
         >
-          {saving ? 'Saving...' : '💾 Save Changes'}
+          {saving ? 'Saving...' : 'Save Settings'}
         </button>
       </div>
 
       {successMessage && (
-        <div className="p-3 bg-emerald-950/60 border border-emerald-800/80 rounded-lg text-xs text-emerald-300 flex items-center gap-2">
+        <div className="p-3 bg-[var(--badge-easy-bg)] border border-[var(--badge-easy-border)] rounded-md text-xs text-[var(--badge-easy-text)] font-medium flex items-center gap-2">
           <span>✓</span>
           <span>{successMessage}</span>
         </div>
       )}
 
       {errorMessage && (
-        <div className="p-3 bg-rose-950/60 border border-rose-800/80 rounded-lg text-xs text-rose-300">
+        <div className="p-3 bg-[var(--badge-hard-bg)] border border-[var(--badge-hard-border)] rounded-md text-xs text-[var(--badge-hard-text)] font-medium">
           {errorMessage}
         </div>
       )}
 
       {/* Programming Languages Section */}
-      <div className="space-y-3 pt-2 border-t border-zinc-800/80">
+      <div className="space-y-3 pt-2 border-t border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-zinc-200">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               Permitted Programming Languages ({selectedLangs.length} / {PROGRAMMING_LANGUAGES.length})
             </h3>
-            <p className="text-[11px] text-zinc-400">
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
               Only checked languages will appear in your members&apos; code editor and language switchers.
             </p>
           </div>
           <button
             type="button"
             onClick={selectAllLanguages}
-            className="text-xs text-purple-400 hover:text-purple-300 font-medium"
+            className="text-xs text-zinc-900 dark:text-zinc-100 underline underline-offset-2 hover:opacity-80 font-medium"
           >
-            Select All Languages
+            Select All
           </button>
         </div>
 
@@ -155,27 +155,28 @@ export function OrgCurriculumSettings() {
                 key={lang.id}
                 type="button"
                 onClick={() => toggleLanguage(lang.id)}
-                className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between ${
+                className={`p-3 rounded-lg border text-left transition-all flex flex-col justify-between ${
                   isSelected
-                    ? 'bg-purple-950/40 border-purple-600/60 shadow-sm'
-                    : 'bg-zinc-950/60 border-zinc-800 text-zinc-500 hover:border-zinc-700'
+                    ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 shadow-2xs'
+                    : 'bg-zinc-50 dark:bg-[#0c0d10] border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700'
                 }`}
               >
                 <div className="flex items-center justify-between w-full mb-1">
-                  <span className="text-xl">{lang.icon}</span>
+                  <span className="font-mono text-sm font-bold">{lang.fileExtension}</span>
                   <span
                     className={`w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-bold ${
-                      isSelected ? 'bg-purple-600 text-white' : 'border border-zinc-700 text-transparent'
+                      isSelected
+                        ? 'bg-white text-zinc-900 dark:bg-zinc-900 dark:text-white'
+                        : 'border border-zinc-300 dark:border-zinc-700 text-transparent'
                     }`}
                   >
                     ✓
                   </span>
                 </div>
                 <div>
-                  <div className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-zinc-400'}`}>
+                  <div className={`text-xs font-semibold ${isSelected ? 'text-white dark:text-zinc-900' : 'text-zinc-800 dark:text-zinc-200'}`}>
                     {lang.name}
                   </div>
-                  <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{lang.fileExtension}</div>
                 </div>
               </button>
             );
@@ -184,22 +185,22 @@ export function OrgCurriculumSettings() {
       </div>
 
       {/* Curriculum Categories Section */}
-      <div className="space-y-3 pt-4 border-t border-zinc-800/80">
+      <div className="space-y-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-zinc-200">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               Permitted CS Topics &amp; Categories ({selectedCats.length} / {CS_CATEGORIES.length})
             </h3>
-            <p className="text-[11px] text-zinc-400">
-              Filter the 90-day mastery curriculum roadmap to focus exclusively on target domains.
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              Filter the 90-day curriculum roadmap to focus exclusively on target domains.
             </p>
           </div>
           <button
             type="button"
             onClick={selectAllCategories}
-            className="text-xs text-purple-400 hover:text-purple-300 font-medium"
+            className="text-xs text-zinc-900 dark:text-zinc-100 underline underline-offset-2 hover:opacity-80 font-medium"
           >
-            Select All Topics
+            Select All
           </button>
         </div>
 
@@ -211,15 +212,14 @@ export function OrgCurriculumSettings() {
                 key={cat.id}
                 type="button"
                 onClick={() => toggleCategory(cat.name)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs text-left transition-all ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-md border text-xs text-left transition-all ${
                   isSelected
-                    ? 'bg-purple-950/30 border-purple-600/50 text-purple-200 font-medium'
-                    : 'bg-zinc-950/50 border-zinc-800 text-zinc-500 hover:border-zinc-700'
+                    ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 font-medium'
+                    : 'bg-zinc-50 dark:bg-[#0c0d10] border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700'
                 }`}
               >
-                <span className="text-sm">{cat.icon}</span>
                 <span className="truncate flex-1">{cat.name}</span>
-                {isSelected && <span className="text-purple-400 text-xs">✓</span>}
+                {isSelected && <span className="text-xs font-bold">✓</span>}
               </button>
             );
           })}
